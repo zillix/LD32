@@ -33,7 +33,7 @@ package com.zillix.zlxnape
 		
 		public function getSprite(interactor:Interactor) : ZlxNapeSprite
 		{
-			if (interactor == null || !_bodyMap.hasOwnProperty(interactor))
+			if (interactor == null || !_bodyMap[interactor])
 			{
 				return null;
 			}

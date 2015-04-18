@@ -11,6 +11,7 @@ package com.zillix.zlxnape
 		public static var PLAYER:CbType = new CbType();
 		public static var GROUND:CbType = new CbType();
 		public static var ABSORB:CbType = new CbType();
+		public static var PICKUP:CbType = new CbType();
 	}
 	
 }

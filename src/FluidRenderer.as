@@ -12,6 +12,7 @@ package
 	import org.flixel.FlxObject;
 	import org.flixel.FlxPoint;
 	import org.flixel.FlxSprite;
+	import flash.utils.getTimer;
 	
 	/**
 	 * This fluid rendering implementation borrowed somewhat from here:
@@ -30,11 +31,15 @@ package
 		
 		private var circleSprite:Sprite;
 		
-		private var blurFilter:BlurFilter = new BlurFilter(15, 15, 3);
+		//private var blurFilter:BlurFilter = new BlurFilter(15, 15, 3);
+		private var blurFilter:BlurFilter = new BlurFilter(12, 12, 2);
 		
 		private var group:FlxGroup;
 		
 		private static const CIRCLE_RADIUS:Number = 10;
+		
+		private var _nextDrawTime:int = 0;
+		private static const DRAW_FREQ:Number = .01;
 		
 		
 		public function FluidRenderer(ScreenWidth:Number, ScreenHeight:Number, Group:FlxGroup)
@@ -70,41 +75,48 @@ package
 		
 		override public function draw() : void
 		{
+			var time:int = getTimer();
+			
 			var camera:FlxCamera = FlxG.camera;
-			
-			drawCanvasData.fillRect(drawCanvasData.rect,0x00110000);
-			for (var i:int = 0; i < group.members.length; i++)
+			if (true) //time > _nextDrawTime)
 			{
-				var member:Bubble = group.members[i] as Bubble;
-				if (!member)
+				_nextDrawTime = time + 1000 * DRAW_FREQ;
+			
+			
+			
+				drawCanvasData.fillRect(drawCanvasData.rect,0x00000000);
+				for (var i:int = 0; i < group.members.length; i++)
 				{
-					continue;
+					var member:Bubble = group.members[i] as Bubble;
+					if (!member)
+					{
+						continue;
+					}
+					
+					var xPos:int = member.x - camera.scroll.x;
+					var yPos:int = member.y - camera.scroll.y;
+					var scale:Number = member.radius / CIRCLE_RADIUS;
+					var fudgeFactor:int = 55;
+					if (scale > 0
+						&& xPos >= -fudgeFactor && xPos < drawCanvas.width + fudgeFactor
+						&& yPos >= -fudgeFactor && yPos < drawCanvas.height + fudgeFactor)
+					{
+						transMatrix.scale(scale, scale);
+						transMatrix.tx = xPos;
+						transMatrix.ty = yPos;
+						drawCanvasData.draw(circleSprite, transMatrix);
+						transMatrix.scale(1 / scale, 1 / scale);
+					}
+					
 				}
 				
-				var xPos:int = member.x - camera.scroll.x;
-				var yPos:int = member.y - camera.scroll.y;
-				var scale:Number = member.radius / CIRCLE_RADIUS;
-				var fudgeFactor:int = 55;
-				if (scale > 0
-					&& xPos >= -fudgeFactor && xPos < drawCanvas.width + fudgeFactor
-					&& yPos >= -fudgeFactor && yPos < drawCanvas.height + fudgeFactor)
-				{
-					transMatrix.scale(scale, scale);
-					transMatrix.tx = xPos;
-					transMatrix.ty = yPos;
-					drawCanvasData.draw(circleSprite, transMatrix);
-					transMatrix.scale(1 / scale, 1 / scale);
-				}
-				
+				var point:Point = new Point();
+				drawCanvasData.applyFilter(drawCanvasData, drawCanvasData.rect, new Point(0, 0), blurFilter);
+				 drawCanvasDataCopy.fillRect(drawCanvasData.rect, 0x00000000);
+				drawCanvasDataCopy.threshold(drawCanvasData, drawCanvasData.rect, point, ">", 0XFF2b2b2b, 0x55FFFFFF, 0xFFFFFFFF, false);
+				drawCanvasDataCopy.threshold(drawCanvasData, drawCanvasData.rect, point, ">", 0XFF2c2c2c, 0xBBFFFFFF, 0xFFFFFFFF, false);
+				drawCanvasDataCopy.threshold(drawCanvasData, drawCanvasData.rect, point, ">", 0XFF2d2d2d, 0xFFFFFFFF, 0xFFFFFFFF, false);
 			}
-			
-			var point:Point = new Point();
-			drawCanvasData.applyFilter(drawCanvasData, drawCanvasData.rect, new Point(0, 0), blurFilter);
-			drawCanvasDataCopy.fillRect(drawCanvasData.rect,0x66FF0000);
-			drawCanvasDataCopy.threshold(drawCanvasData, drawCanvasData.rect, point, ">", 0XFF2b2b2b, 0x55FFFFFF, 0xFFFFFFFF, false);
-			drawCanvasDataCopy.threshold(drawCanvasData, drawCanvasData.rect, point, ">", 0XFF2c2c2c, 0xBBFFFFFF, 0xFFFFFFFF, false);
-			drawCanvasDataCopy.threshold(drawCanvasData, drawCanvasData.rect, point, ">", 0XFF2d2d2d, 0xFFFFFFFF, 0xFFFFFFFF, false);
-			
 			camera.buffer.draw(drawCanvasDataCopy,_matrix,null,blend,null,antialiasing);
 		}
 	}

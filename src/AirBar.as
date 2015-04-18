@@ -21,7 +21,7 @@ package
 			super();
 			
 			outline = new FlxSprite(X - OUTLINE_BUFFER, Y - OUTLINE_BUFFER);
-			outline.makeGraphic(DEFAULT_LENGTH + OUTLINE_BUFFER * 2, BAR_HEIGHT + OUTLINE_BUFFER * 2, 0x99000000);
+			outline.makeGraphic(DEFAULT_LENGTH + OUTLINE_BUFFER * 2, BAR_HEIGHT + OUTLINE_BUFFER * 2, 0x99dddddd);
 			outline.scrollFactor.x = outline.scrollFactor.y = 0;
 			add(outline);
 			

@@ -2,12 +2,14 @@ package
 {
 	import com.zillix.zlxnape.*;
 	import com.zillix.zlxnape.ColorSprite;
+	import com.zillix.zlxnape.demos.ZlxNapeDemo;
 	import nape.constraint.DistanceJoint;
 	import nape.geom.Vec2;
 	import nape.phys.Material;
 	import org.flixel.FlxGroup;
 	import com.zillix.zlxnape.ZlxNapeSprite;
 	import org.flixel.FlxObject;
+	import org.flixel.FlxPoint;
 	
 	/**
 	 * ...
@@ -32,7 +34,6 @@ package
 		private var _anchor:ZlxNapeSprite;
 		private var _bodyContext:BodyContext;
 		
-		private var _segmentCollisionMask:uint;
 		private var _offsetVector:Vec2;
 		
 		public var target:ZlxNapeSprite;
@@ -40,8 +41,13 @@ package
 		public var maxFollowSpeed:Number = 15;
 		public var fluidMask:Number = 0;
 		public var segmentMaterial:Material = Material.wood();
+		public var elasticJoints:Boolean = false;
+		public var segmentCollisionMask:uint = DEFAULT_COLLOSION_MASK;
 		
-		private var DEFAULT_COLLOSION_MASK:uint = ~(InteractionGroups.SEGMENT | InteractionGroups .NO_COLLIDE);
+		private var _dead:Boolean = false;
+		
+		
+		private static var DEFAULT_COLLOSION_MASK:uint = ~(InteractionGroups.SEGMENT | InteractionGroups .NO_COLLIDE);
 		
 		
 		private static const SUB_COLOR:uint = 0xffffff00;
@@ -53,16 +59,10 @@ package
 			SegmentWidth:int = 8, 
 			SegmentHeight:int = 16,
 			SegmentColor:uint = 0xffdddddd,
-			SegmentCollsionMask:uint = 0,
 			MinSegmentDist:int = 5,
 			MaxSegmentDist:int = 20
 			)
 		{
-			if (SegmentCollsionMask == 0)
-			{
-				SegmentCollsionMask = DEFAULT_COLLOSION_MASK;
-			}
-			_segmentCollisionMask = SegmentCollsionMask;
 			_anchor = anchor;
 			_layer = Layer;
 			_segmentCount = SegmentCount;
@@ -91,13 +91,19 @@ package
 			_segments = new Vector.<ZlxNapeSprite>();
 			
 			var base:ZlxNapeSprite = _anchor;
-			for (var i:int = 0; i < _segmentCount; i++)
+			var i:int;
+			for (i = 0; i < _segmentCount; i++)
 			{
 				base = addSegment(base);
 				if (target != null)
 				{
 					base.followTarget(target, followAcceleration, maxFollowSpeed);
 				}
+			}
+			
+			for (i = 0; i < _joints.length; i++)
+			{
+				_joints[i].stiff = !elasticJoints;
 			}
 			
 		}
@@ -108,10 +114,13 @@ package
 			_offsetVector.x + _anchor.x,
 			_offsetVector.y + _anchor.y,
 			_segmentColor);
+			
+			segment.drag = new FlxPoint(15, 15);
+			
 			segment.createBody(_segmentWidth, _segmentHeight, _bodyContext);
 			segment.setMaterial(segmentMaterial);
 			segment.collisionGroup = InteractionGroups.SEGMENT;
-			segment.collisionMask = _segmentCollisionMask;
+			segment.collisionMask = segmentCollisionMask;
 			segment.fluidMask = fluidMask;
 			_segments.push(segment);
 			
@@ -155,6 +164,41 @@ package
 			var joint2:DistanceJoint = _joints[_segmentIndex];
 			joint2.body1 = segment.body;
 			_segmentIndex--;
+		}
+		
+		public function kill() : void
+		{
+			if (_dead)
+			{
+				return;
+			}
+			_dead = true;
+			
+			var i:int;
+			for (i = 0; i < _segments.length; i++)
+			{
+				if (_segments[i])
+				{
+					_segments[i].kill();
+				}
+			}
+			
+			for (i = 0; i < _joints.length; i++)
+			{
+				if (_joints[i])
+				{
+					_joints[i].active = false;
+					_joints[i].space = null;
+				}
+			}
+		}
+		
+		public function set alpha(val:Number) : void
+		{
+			for each (var segment:ZlxNapeSprite in segments)
+			{
+				segment.alpha = val;
+			}
 		}
 	}
 	

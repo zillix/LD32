@@ -37,7 +37,10 @@ package
 			this.body.setShapeMaterials(normalFriction);
 			maxVelocity.x = MAX_SPEED;
 			_bubbleEmitter = new BubbleEmitter(this, PlayState.instance);
-			setMaterial(new Material(1, 1, 2, 3.2, 0.001));
+			setMaterial(new Material(1, 1, 2, Water.DENSITY + .2, 0.001));
+			addCbType(CallbackTypes.PLAYER);
+			
+			PlayState.instance.attachGlow(this, 200);
 		}
 		
 		override public function update() : void

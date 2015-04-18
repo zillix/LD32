@@ -51,11 +51,12 @@ package
 				SEGMENT_WIDTH,
 				SEGMENT_HEIGHT,
 				SEGMENT_COLOR,
-				0,
 				1,
 				4);
 				
+				
 			_chain.segmentMaterial = new Material(0, 1, 2, .01);
+			_chain.segmentCollisionMask = InteractionGroups.TERRAIN;
 			
 			collisionGroup = InteractionGroups.TERRAIN;
 			collisionMask = ~(InteractionGroups.NO_COLLIDE | InteractionGroups.SEGMENT);

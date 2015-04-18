@@ -106,7 +106,10 @@ package
 		private static const TUBE_ANCHOR:uint = 0x0C6241;
 		private static const PLANT_ANCHOR:uint = 0x0C2262;
 		private static const FALL_PLANT_ANCHOR:uint = 0xDA02A7;
+		private static const DRAPE_PLANT_ANCHOR:uint = 0x5EB8EC;
 		private static const BIG_ROCK:uint = 0x571730;
+		private static const JELLYFISH:uint = 0x4DFDFC;
+		private static const AIR_POCKET:uint = 0xFD8F4D;
 		/*private static const MECH_SPAWN:uint = 0xC4181A; // 196 24 26
 		private static const MECH_HIDE:uint = 0x2C18C4; // 44 24 196
 		private static const MECH_IDLE:uint = 0x9D2DAF; // 157 45 175
@@ -156,15 +159,27 @@ package
 					break;
 					
 				case PLANT_ANCHOR:
-					_state.addPlant(X, Y, false);
+					_state.addPlant(X, Y, Plant.RISE_PLANT );
 					break;
 					
 				case FALL_PLANT_ANCHOR:
-					_state.addPlant(X, Y, true);
+					_state.addPlant(X, Y, Plant.FALL_PLANT);
+					break;
+					
+				case DRAPE_PLANT_ANCHOR:
+					_state.addPlant(X, Y, Plant.DRAPE_PLANT);
 					break;
 					
 				case BIG_ROCK:
 					_state.addBigRock(X, Y);
+					break;
+					
+				case JELLYFISH:
+					_state.addJellyfish(X, Y);
+					break;
+					
+				case AIR_POCKET:
+					_state.addAirPocket(X, Y);
 					break;
 			}
 			

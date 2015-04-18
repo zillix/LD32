@@ -11,11 +11,13 @@ package
 	 */
 	public class Water extends ZlxNapeSprite 
 	{
+		public static var DENSITY:int = 3;
+		
 		public function Water(X:Number, Y:Number, Width:Number, Height:Number, Context:BodyContext)
 		{
 			super(X, Y);
 			createBody(Width, Height, Context, BodyType.STATIC);
-			var fluidProperties:FluidProperties = new FluidProperties(3, 4);
+			var fluidProperties:FluidProperties = new FluidProperties(DENSITY, 4);
 			body.setShapeFluidProperties(fluidProperties);
 			collisionMask = 0;
 			fluidMask = ~InteractionGroups.NO_COLLIDE;

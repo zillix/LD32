@@ -5,6 +5,7 @@ package
 	import flash.display.Shape;
 	import flash.utils.getTimer;
 	import nape.phys.Body;
+	import nape.phys.Material;
 	import nape.shape.Circle;
 	
 	/**
@@ -18,12 +19,15 @@ package
 		public var radius:Number = 0;
 		public var initialRadius:Number;
 		
-		public var LIFESPAN:Number = 3;
+		public var LIFESPAN:Number = 5;
 		public var SHRINK_LIFESPAN:Number = 1;
 		
 		private var _deathTime:Number = 0;
 		
-		public function Bubble(X:Number, Y:Number, Radius:Number, Context:BodyContext)
+		private var _glow:Glow;
+		private var GLOW_RADIUS_BUFFER:int = 50;
+		
+		public function Bubble(X:Number, Y:Number, Radius:Number, Context:BodyContext, fade:Boolean = true)
 		{
 			super(X, Y);
 			radius = Radius;
@@ -36,7 +40,17 @@ package
 			collisionMask = ~(InteractionGroups.NO_COLLIDE);
 			collisionGroup = InteractionGroups.BUBBLE;
 			
-			_deathTime = getTimer() + LIFESPAN * 1000;
+			if (fade)
+			{
+				_deathTime = getTimer() + LIFESPAN * 1000;
+			}
+			
+			setMaterial(new Material(0, 5, 5, .6, 5));
+			
+			visible = false;
+			
+			_glow = PlayState.instance.attachGlow(this, GLOW_RADIUS_BUFFER);
+			_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
 		}
 		
 		override public function update() : void
@@ -44,17 +58,19 @@ package
 			super.update();
 			
 			var time:int = getTimer();
-			if (time > _deathTime)
+			if (_deathTime > 0 &&
+				time > _deathTime)
 			{
 				var killTime:Number = _deathTime + SHRINK_LIFESPAN * 1000;
 				if (time > killTime)
 				{
 					this.kill();
+					_glow.kill();
 					return;
 				}
 				
 				setRadius((1 - (time - _deathTime) / (SHRINK_LIFESPAN * 1000)) * initialRadius);
-				
+				_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
 			}
 		}
 		

@@ -37,6 +37,8 @@ package com.zillix.zlxnape
 		private var _accelerationRate:Number = 0;
 		
 		protected var _bodyRegistry:BodyRegistry;
+		protected var _bodyContext:BodyContext;
+		protected var _sleeps:Boolean = true;
 		
 		protected var _defaultScale:Number = 1;
 		
@@ -45,6 +47,8 @@ package com.zillix.zlxnape
         public function ZlxNapeSprite(X:Number, Y:Number)
         {
             super(X, Y);
+			
+			drag = new FlxPoint(0, 0);
 			
 			// So we can use the FlxObject movement variables without worrying about Flixel trying to move it
 			moves = false;
@@ -148,6 +152,7 @@ package com.zillix.zlxnape
 		{
 			collisionGroup = ~InteractionGroups.NO_COLLIDE;
 			collisionMask = ~InteractionGroups.NO_COLLIDE;
+			_bodyContext = bodyContext;
 			_body.space = bodyContext.space;
 			addDefaultCbTypes();
 		}
@@ -157,6 +162,18 @@ package com.zillix.zlxnape
 			if (_body == null)
 			{
 				return;
+			}
+			
+			if (_sleeps)
+			{
+				if (onScreen() &&_body.space == null)
+				{
+					_body.space = _bodyContext.space;
+				}
+				else if (!onScreen() && _body.space)
+				{
+					_body.space == null;
+				}
 			}
 			
           	x = _body.position.x - _origOffset.x;
@@ -195,9 +212,38 @@ package com.zillix.zlxnape
 				}
 			}
 			
+			if (drag.x > 0)
+			{
+				if (_body.velocity.x > 0)
+				{
+					_body.velocity.x = Math.max(0, _body.velocity.x - drag.x * FlxG.elapsed);
+				}
+				else
+				{
+					_body.velocity.x = Math.min(0, _body.velocity.x + drag.x * FlxG.elapsed);
+				}
+			}
+			
+			if (drag.y > 0)
+			{
+				if (_body.velocity.y> 0)
+				{
+					_body.velocity.y = Math.max(0, _body.velocity.y - drag.y * FlxG.elapsed);
+				}
+				else
+				{
+					_body.velocity.y = Math.min(0, _body.velocity.y + drag.y * FlxG.elapsed);
+				}
+			}
+			
+			
 			if (_target != null)
 			{
-				_body.applyImpulse(Vec2.weak(_target.x, _target.y).sub(Vec2.weak(x, y), true).mul(_accelerationRate * FlxG.elapsed));
+				var direction:Vec2 = Vec2.get(_target.x, _target.y).sub(Vec2.get(x, y));
+				body.allowRotation = false;
+				body.rotation = 0;
+				var mult:Vec2 = direction.mul(_accelerationRate * FlxG.elapsed);
+				_body.applyImpulse(mult);
 			}
 			
 			super.update();
@@ -350,10 +396,7 @@ package com.zillix.zlxnape
 		
 		public function setMaterial(material:Material) : void
 		{
-			for (var i:int = 0; i < _body.shapes.length; i++)
-			{
-				Shape(_body.shapes.at(i)).material = material;
-			}
+			_body.setShapeMaterials(material);
 		}
 		
 		public function setPosition(X:Number, Y:Number) : void

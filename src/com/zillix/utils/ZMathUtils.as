@@ -1,5 +1,6 @@
 package com.zillix.utils
 {
+	import nape.geom.Vec2;
 	
 	/**
 	 * ...
@@ -25,6 +26,12 @@ package com.zillix.utils
 		public static function rgbToHex(r:int, g:int, b:int, a:int = 255) : uint 
 		{
 			return a << 24 | r << 16 | g << 8 | b;
+		}
+		
+		public static function getVector(angle:Number, length:Number) : Vec2
+		{
+			var vec:Vec2 = Vec2.fromPolar(length, toRadians(angle));
+			return vec;
 		}
 	}
 	

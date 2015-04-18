@@ -2,7 +2,7 @@ package
 {
 	import com.zillix.zlxnape.BodyContext;
 	import com.zillix.zlxnape.BodyRegistry;
-	import com.zillix.zlxnape.ColorSprite;
+	import com.zillix.zlxnape.*;
 	import com.zillix.zlxnape.ConnectedPixelGroup;
 	import com.zillix.zlxnape.demos.ColoredBodyDemo;
 	import com.zillix.zlxnape.demos.ConnectedPixelGroupDemo;
@@ -11,6 +11,7 @@ package
 	import com.zillix.zlxnape.demos.TentacleDemo;
 	import com.zillix.zlxnape.demos.ZlxNapeDemo;
 	import com.zillix.zlxnape.ZlxNapeSprite;
+	import flash.text.engine.BreakOpportunity;
 	
 	import com.zillix.utils.ZGroupUtils;
 	
@@ -68,13 +69,19 @@ package
 		private var plantLayer:FlxGroup = new FlxGroup();
 		private var rockLayer:FlxGroup = new FlxGroup();
 		private var hudLayer:FlxGroup = new FlxGroup();
+		public var enemyLayer:FlxGroup = new FlxGroup();
+		private var enemyNodeLayer:FlxGroup = new FlxGroup();
+		public var darkLayer:FlxGroup = new FlxGroup();
+		public var glowLayer:FlxGroup = new FlxGroup();
 		
+		
+		private var darkness:Darkness;
 		private var hud:Hud;
 		
 		public static const GRAVITY:Number = 200;
 		public static const FRAME_RATE :Number = 1 / 30;
 		
-		public var fluidRenderer:FluidRenderer;
+		public var bubbleRenderer:FluidRenderer;
 		
 		public static const CLEAN_TIME:Number = 1;
 		private var _nextCleanTime:Number = 0;
@@ -87,29 +94,42 @@ package
 			instance = this;
 			FlxG.bgColor = 0xffdddddd;
 			
+			
+			bubbleRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer);
+			add(bubbleRenderer);
+			//fluidRenderer.alpha = .5;
+			
+			add(glowLayer);
 			add(terrainLayer);
 			add(bubbleLayer);
 			add(tubeLayer);
 			add(plantLayer);
 			add(rockLayer);
+			add(enemyNodeLayer);
+			add(enemyLayer);
+			
+			
+			
+			add(darkLayer);
 			
 			add(hudLayer);
+			
+			
 			
 			hud = new Hud();
 			hudLayer.add(hud);
 			
-			fluidRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer);
-			add(fluidRenderer);
-			fluidRenderer.alpha = .5;
 			
 			space = new Space(new Vec2(0, GRAVITY));
 			bodyRegistry = new BodyRegistry();
 			bodyContext = new BodyContext(space, bodyRegistry);
 			
+			
+			darkness = new Darkness(0, 0);
+			darkLayer.add(darkness);
+			
 			player = new Player(0, 0, bodyContext);
 			add(player);
-			
-			
 			
 			mapReader = new MapReader(this);
 			mapReader.readMap(Map1, PIXEL_WIDTH);
@@ -124,8 +144,9 @@ package
 				}
 			}
 			
-			water = new Water(100, 0, mapReader.worldHeight, mapReader.worldHeight, bodyContext);
-			add(water);
+			water = new Water(0, 0, mapReader.worldHeight, mapReader.worldHeight, bodyContext);
+			//add(water);
+			water.visible = false;
 			
 			FlxG.camera.setBounds(0, 0, mapReader.worldWidth, mapReader.worldHeight);
 			playerFollower = new PlayerFollower(player.x, player.y, player);
@@ -135,6 +156,28 @@ package
 			debug = new BitmapDebug(mapReader.worldWidth, mapReader.worldHeight, 0xdd000000, true );
 			FlxG.stage.addChild(debug.display);
 			
+			setUpListeners();
+			
+		}
+		
+		private function setUpListeners() : void
+		{
+			var touchPickup:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CallbackTypes.PLAYER, CallbackTypes.PICKUP, playerTouchPickup, 2);
+			space.listeners.add(touchPickup);
+		}
+		
+		private function playerTouchPickup(collision:InteractionCallback) : void
+		{
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
+			if (obj1 is IPickup)
+			{
+				IPickup(obj1).pickup();
+			}
+			if (obj2 is IPickup)
+			{
+				IPickup(obj2).pickup();
+			}
 		}
 		
 		override public function update():void
@@ -169,8 +212,17 @@ package
 			{
 				_nextCleanTime = time + CLEAN_TIME * 1000;
 				ZGroupUtils .cleanGroup(bubbleLayer);
+				ZGroupUtils .cleanGroup(enemyLayer);
+				ZGroupUtils .cleanGroup(enemyNodeLayer);
+				ZGroupUtils .cleanGroup(glowLayer);
 			}
 		}
+		
+		override public function draw():void 
+		{
+		   darkness.reDarken();
+		   super.draw();
+		 }
 		
 		public function setupTube(X:Number, Y:Number) : void
 		{
@@ -189,9 +241,26 @@ package
 			}
 		}
 		
-		public function addPlant(X:Number, Y:Number, Fall:Boolean) : void
+		public function addPlant(X:Number, Y:Number, plantType:int) : void
 		{
-			var plant:Plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 3 + 2, Math.random() * 3 + 4, Fall);
+			var plant:Plant;
+			
+			switch (plantType)
+			{
+				case Plant.FALL_PLANT:
+					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 3 + 2, Math.random() * 3 + 2, plantType, 1, 4);
+					break;
+					
+				case Plant.RISE_PLANT:
+					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 3 + 2, Math.random() * 3 + 2, plantType, 1, 4);
+					break;
+					
+				case Plant.DRAPE_PLANT:
+					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 4 + 2, Math.random() * 2 + 5, plantType, 1, 4);
+					break;
+			}
+					
+					
 			plantLayer.add(plant);
 		}
 		
@@ -203,6 +272,30 @@ package
 			rock.setMaterial(new Material(1, 1, 1, 3.3, .001));
 			rockLayer.add(rock);
 			
+		}
+		
+		
+		public function addJellyfish(X:Number, Y:Number) : void
+		{
+			var jellyFish:JellyFish = new JellyFish(X, Y, bodyContext, enemyNodeLayer);
+			enemyLayer.add(jellyFish);
+		}
+		
+		public function addAirPocket(X:Number, Y:Number) : void
+		{
+			for (var i:int = 0; i < 3; i++)
+			{
+				var bubble:Bubble = new Bubble(X, Y, 10, bodyContext, false);
+				bubbleLayer.add(bubble);
+			}
+		}
+		
+		public function attachGlow(owner:FlxSprite, radius:Number) : Glow
+		{
+			var glow:Glow = new Glow(owner.x, owner.y, darkness, owner, radius);
+			glowLayer.add(glow);
+			
+			return glow;
 		}
 	}
 }
