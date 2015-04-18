@@ -14,18 +14,30 @@ package
 	 */
 	public class Player extends ColorSprite
 	{
-		public var ACCELERATION:int = 600;
+		public var ACCELERATION:int = 800;
+		public var MAX_SPEED:int = 250;
 		private const normalFriction:Material = new Material( -.5, 1, 0.38, 0.875, 0.005);
 		
 		private var _bubbleEmitter:BubbleEmitter;
+		
+		public var maxAir:Number = 100;
+		public var currentAir:Number = 100;
+		public static const NORMAL_AIR_DRAIN:Number = 2;
+		public static const MOVING_AIR_DRAIN:Number = 4;
+		public static const BUBBLING_AIR_DRAIN:Number = 15;
+		
+		public static const AIR_REGAIN:Number = 15;
+		
+		private var _severed:Boolean = false;
 		
 		public function Player(X:Number, Y:Number, Context:BodyContext)
 		{
 			super(X, Y, 0xffff0000);
 			createBody(20, 20, Context);
 			this.body.setShapeMaterials(normalFriction);
-			maxVelocity.x = 100;
+			maxVelocity.x = MAX_SPEED;
 			_bubbleEmitter = new BubbleEmitter(this, PlayState.instance);
+			setMaterial(new Material(1, 1, 2, 3.2, 0.001));
 		}
 		
 		override public function update() : void
@@ -55,6 +67,7 @@ package
 			{
 				_body.applyImpulse(Vec2.get(0, ACCELERATION * FlxG.elapsed));
 				facing = LEFT;
+				keyPressed = true;
 			}
 			
 			if (FlxG.keys.justPressed("SPACE"))
@@ -68,10 +81,35 @@ package
 			
 			if (FlxG.keys.justPressed("F"))
 			{
+				sever();
 				PlayState.instance.severTube();
 			}
 			
 			_bubbleEmitter.update();
+			
+			
+			var airDrain:Number = 0;
+			airDrain += NORMAL_AIR_DRAIN;
+			if (keyPressed)
+			{
+				airDrain += MOVING_AIR_DRAIN;
+			}
+			if (FlxG.keys.SPACE)
+			{
+				airDrain += BUBBLING_AIR_DRAIN;
+			}
+			
+			if (!_severed)
+			{
+				airDrain -= AIR_REGAIN;
+			}
+			
+			currentAir = Math.min(maxAir, Math.max(0, currentAir - airDrain * FlxG.elapsed));
+		}
+		
+		public function sever() : void
+		{
+			_severed = true;
 		}
 		
 		override public function addDefaultCbTypes() : void

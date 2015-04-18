@@ -2,6 +2,7 @@ package
 {
 	import com.zillix.zlxnape.BodyContext;
 	import com.zillix.zlxnape.BodyRegistry;
+	import com.zillix.zlxnape.ColorSprite;
 	import com.zillix.zlxnape.ConnectedPixelGroup;
 	import com.zillix.zlxnape.demos.ColoredBodyDemo;
 	import com.zillix.zlxnape.demos.ConnectedPixelGroupDemo;
@@ -64,6 +65,11 @@ package
 		public var terrainLayer:FlxGroup = new FlxGroup();
 		public var bubbleLayer:FlxGroup = new FlxGroup();
 		private var tubeLayer:FlxGroup = new FlxGroup();
+		private var plantLayer:FlxGroup = new FlxGroup();
+		private var rockLayer:FlxGroup = new FlxGroup();
+		private var hudLayer:FlxGroup = new FlxGroup();
+		
+		private var hud:Hud;
 		
 		public static const GRAVITY:Number = 200;
 		public static const FRAME_RATE :Number = 1 / 30;
@@ -84,6 +90,13 @@ package
 			add(terrainLayer);
 			add(bubbleLayer);
 			add(tubeLayer);
+			add(plantLayer);
+			add(rockLayer);
+			
+			add(hudLayer);
+			
+			hud = new Hud();
+			hudLayer.add(hud);
 			
 			fluidRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer);
 			add(fluidRenderer);
@@ -174,6 +187,22 @@ package
 					(tube as BreathingTube).sever();
 				}
 			}
+		}
+		
+		public function addPlant(X:Number, Y:Number, Fall:Boolean) : void
+		{
+			var plant:Plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 3 + 2, Math.random() * 3 + 4, Fall);
+			plantLayer.add(plant);
+		}
+		
+		public function addBigRock(X:Number, Y:Number) : void
+		{
+			const ROCK_COLOR:uint = 0xff571730;
+			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
+			rock.createBody(100, 40, bodyContext);
+			rock.setMaterial(new Material(1, 1, 1, 3.3, .001));
+			rockLayer.add(rock);
+			
 		}
 	}
 }
