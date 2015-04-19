@@ -19,7 +19,7 @@ package
 		{
 			super(X, Y);
 			//loadGraphic(DarknessSprite);
-			makeGraphic(FlxG.width, FlxG.height, 0x88000000);
+			makeGraphic(FlxG.width, FlxG.height, 0xff000000);
 			scrollFactor = new FlxPoint(0, 0);
 			
 			backupPixels = this.pixels.clone();
@@ -29,6 +29,8 @@ package
 		
 		override public function update() : void
 		{
+			super.update();
+			alpha = PlayState.instance.depthDarkness;
 		}
 		
 		public function reDarken() : void

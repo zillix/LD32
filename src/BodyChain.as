@@ -3,13 +3,17 @@ package
 	import com.zillix.zlxnape.*;
 	import com.zillix.zlxnape.ColorSprite;
 	import com.zillix.zlxnape.demos.ZlxNapeDemo;
+	import flash.geom.Point;
+	import nape.callbacks.CbType;
 	import nape.constraint.DistanceJoint;
 	import nape.geom.Vec2;
 	import nape.phys.Material;
+	import nape.phys.BodyType;
 	import org.flixel.FlxGroup;
 	import com.zillix.zlxnape.ZlxNapeSprite;
 	import org.flixel.FlxObject;
 	import org.flixel.FlxPoint;
+	import org.flixel.FlxSprite;
 	
 	/**
 	 * ...
@@ -44,7 +48,13 @@ package
 		public var elasticJoints:Boolean = false;
 		public var segmentCollisionMask:uint = DEFAULT_COLLOSION_MASK;
 		
+		
 		private var _dead:Boolean = false;
+		
+		public var segmentSpriteClass:Class;
+		public var segmentSpriteScale:FlxPoint = new FlxPoint(2, 2);
+		
+		public var segmentSpriteRotations:int = 32;
 		
 		
 		private static var DEFAULT_COLLOSION_MASK:uint = ~(InteractionGroups.SEGMENT | InteractionGroups .NO_COLLIDE);
@@ -122,6 +132,13 @@ package
 			segment.collisionGroup = InteractionGroups.SEGMENT;
 			segment.collisionMask = segmentCollisionMask;
 			segment.fluidMask = fluidMask;
+			
+			if (segmentSpriteClass)
+			{
+				segment.loadRotatedGraphic(segmentSpriteClass, segmentSpriteRotations, -1, false, true);
+				segment.scale = segmentSpriteScale;
+			}
+			
 			_segments.push(segment);
 			
 			_layer.add(segment);
@@ -133,6 +150,8 @@ package
 				segment.getEdgeVector(ZlxNapeSprite.DIRECTION_RIGHT),
 				_minDist,
 				_maxDist);
+				
+			distanceJoint.maxForce = 100000;
 			
 			
 			distanceJoint.space = _bodyContext.space;
@@ -157,6 +176,11 @@ package
 		
 		public function extendSegment() : void
 		{
+			if (_segmentIndex == 0)
+			{
+				return;
+			}
+			
 			var segment:ZlxNapeSprite = _segments[_segmentIndex - 1];
 			segment.enable(_bodyContext.space);
 			var joint1:DistanceJoint = _joints[_segmentIndex - 1];
@@ -195,9 +219,35 @@ package
 		
 		public function set alpha(val:Number) : void
 		{
-			for each (var segment:ZlxNapeSprite in segments)
+			for each (var segment:FlxSprite in segments)
 			{
 				segment.alpha = val;
+			}
+		}
+		
+		public function set visible(bool:Boolean) : void
+		{
+			for each (var segment:FlxSprite in segments)
+			{
+				segment.visible = bool;
+			}
+		}
+		
+		public function getArray() : Array
+		{
+			var array:Array = [];
+			for each (var segment:FlxSprite in segments)
+			{
+				array.push(segment);
+			}
+			return array;
+		}
+		
+		public function addCbType(type:CbType) : void
+		{
+			for each (var segment:ZlxNapeSprite in segments)
+			{
+				segment.addCbType(type);
 			}
 		}
 	}

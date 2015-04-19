@@ -33,6 +33,11 @@ package
 			x = target.x + target.width/2;
 			y = target.y + target.height / 2;
 			
+			if (!target.alive)
+			{
+				kill();
+			}
+			
 		}
 		
 		

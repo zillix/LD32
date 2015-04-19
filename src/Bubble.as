@@ -22,10 +22,14 @@ package
 		public var LIFESPAN:Number = 5;
 		public var SHRINK_LIFESPAN:Number = 1;
 		
+		public var POP_LIFESPAN:Number = .7;
+		
 		private var _deathTime:Number = 0;
 		
 		private var _glow:Glow;
 		private var GLOW_RADIUS_BUFFER:int = 50;
+		
+		private var _popped:Boolean = false;
 		
 		public function Bubble(X:Number, Y:Number, Radius:Number, Context:BodyContext, fade:Boolean = true)
 		{
@@ -36,6 +40,8 @@ package
 			
 			initialRadius = Radius;
 			setRadius(Radius);
+			
+			addCbType(CallbackTypes.BUBBLE);
 			
 			collisionMask = ~(InteractionGroups.NO_COLLIDE);
 			collisionGroup = InteractionGroups.BUBBLE;
@@ -48,6 +54,8 @@ package
 			setMaterial(new Material(0, 5, 5, .6, 5));
 			
 			visible = false;
+			
+			//_canRotate = false;
 			
 			_glow = PlayState.instance.attachGlow(this, GLOW_RADIUS_BUFFER);
 			_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
@@ -90,6 +98,16 @@ package
 						circle.radius = radius;
 					}
 				}
+			}
+		}
+		
+		public function onTouchAir() : void
+		{
+			if (!_popped)
+			{
+				_popped = true;
+				
+				_deathTime = getTimer();
 			}
 		}
 	}

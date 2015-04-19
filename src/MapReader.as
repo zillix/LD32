@@ -110,6 +110,10 @@ package
 		private static const BIG_ROCK:uint = 0x571730;
 		private static const JELLYFISH:uint = 0x4DFDFC;
 		private static const AIR_POCKET:uint = 0xFD8F4D;
+		private static const AIR_ZONE_END:uint = 0x1844C4;
+		private static const AIR_ZONE_START:uint = 0xE54DFD;
+		private static const TRAP_DOOR:uint = 0xA6FD4D;;
+		private static const SMALL_ROCK:uint = 0x028BDA;
 		/*private static const MECH_SPAWN:uint = 0xC4181A; // 196 24 26
 		private static const MECH_HIDE:uint = 0x2C18C4; // 44 24 196
 		private static const MECH_IDLE:uint = 0x9D2DAF; // 157 45 175
@@ -144,6 +148,8 @@ package
 		[Embed(source = "data/secretBlockade2.png")]	public var SecretBlockadeSprite2:Class;
 		[Embed(source = "data/pedestal.png")]	public var PedestalSprite:Class;*/
 		
+		private static var airStartPoint:FlxPoint = new FlxPoint();
+		
 		private function processMapPixel(color:uint, column:int, row:int, scale:int, bitmapWidth:int, bitmapHeight:int) : void
 		{
 			var X:Number = column * scale;
@@ -174,12 +180,28 @@ package
 					_state.addBigRock(X, Y);
 					break;
 					
+				case SMALL_ROCK:
+					_state.addSmallRock(X, Y);
+					break;
+					
 				case JELLYFISH:
 					_state.addJellyfish(X, Y);
 					break;
 					
 				case AIR_POCKET:
 					_state.addAirPocket(X, Y);
+					break;
+					
+				case AIR_ZONE_START:
+					airStartPoint = new FlxPoint(X, Y);
+					break;
+					
+				case AIR_ZONE_END:
+					_state.addAirZone(airStartPoint, new FlxPoint(X, Y));
+					break;
+					
+				case TRAP_DOOR:
+					_state.addTrapDoor(X, Y);
 					break;
 			}
 			

@@ -17,6 +17,8 @@ package
 			
 			setMaterial(new Material(0, 5, 5, Water.DENSITY - .2));
 			collisionGroup = InteractionGroups.ENEMY_NODE;
+			
+			addCbType(CallbackTypes.ENEMY);
 			//collisionMask = ~InteractionGroups.ENEMY_NODE;
 		}
 	}

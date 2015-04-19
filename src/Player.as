@@ -7,6 +7,7 @@ package
 	import nape.phys.Material;
 	import nape.geom.Vec2;
 	import org.flixel.*;
+	import flash.utils.getTimer;
 	
 	/**
 	 * ...
@@ -14,21 +15,35 @@ package
 	 */
 	public class Player extends ColorSprite
 	{
-		public var ACCELERATION:int = 800;
-		public var MAX_SPEED:int = 250;
+		public var EXHAUSTED_ACCELERATION:int = 5500;
+		
+		public var ACCELERATION:int = 5500;
+		public var MAX_SPEED:int = 20;
 		private const normalFriction:Material = new Material( -.5, 1, 0.38, 0.875, 0.005);
 		
 		private var _bubbleEmitter:BubbleEmitter;
 		
 		public var maxAir:Number = 100;
 		public var currentAir:Number = 100;
-		public static const NORMAL_AIR_DRAIN:Number = 2;
-		public static const MOVING_AIR_DRAIN:Number = 4;
+		public static const NORMAL_AIR_DRAIN:Number = 1;
+		public static const MOVING_AIR_DRAIN:Number = 10;
 		public static const BUBBLING_AIR_DRAIN:Number = 15;
 		
-		public static const AIR_REGAIN:Number = 15;
+		public static const DAMAGE_AIR:Number = 70;
+		
+		public static const AIR_TUBE_REGAIN:Number = 12;
+		public static const AIR_ZONE_REGAIN:Number = 60;
+		
+		private var _lastDamageTime:int = 0;
 		
 		private var _severed:Boolean = false;
+		
+		public static const DAMAGE_COOLDOWN:Number = 1;
+		
+		public static const DAMAGE_IMPULSE:Number = 2000;
+		
+		private var _exhausted:Boolean = false;
+		private var _touchingAir:Boolean = false;
 		
 		public function Player(X:Number, Y:Number, Context:BodyContext)
 		{
@@ -36,8 +51,9 @@ package
 			createBody(20, 20, Context);
 			this.body.setShapeMaterials(normalFriction);
 			maxVelocity.x = MAX_SPEED;
+			maxVelocity.y = MAX_SPEED;
 			_bubbleEmitter = new BubbleEmitter(this, PlayState.instance);
-			setMaterial(new Material(1, 1, 2, Water.DENSITY + .2, 0.001));
+			setMaterial(new Material(1, 1, 2, Water.DENSITY - .2, 0.001));
 			addCbType(CallbackTypes.PLAYER);
 			
 			PlayState.instance.attachGlow(this, 200);
@@ -60,23 +76,35 @@ package
 				facing = LEFT;
 				keyPressed = true;
 			}
+			if (!_exhausted)
+			{
+				
+				if (FlxG.keys.pressed("UP"))
+				{
+					_body.applyImpulse(Vec2.get(0, -ACCELERATION * FlxG.elapsed));
+					keyPressed = true;
+				}
+				else if (FlxG.keys.pressed("DOWN"))
+				{
+					_body.applyImpulse(Vec2.get(0, ACCELERATION * FlxG.elapsed));
+					facing = LEFT;
+					keyPressed = true;
+				}
+				
+				if (FlxG.keys.justPressed("SPACE"))
+				{
+					_bubbleEmitter.startEmit();
+				}
+			}
+			else if (_severed)
+			{
+				if (!_touchingAir)
+				{
+					_body.applyImpulse(Vec2.get(0, -EXHAUSTED_ACCELERATION * FlxG.elapsed));
+				}
+			}
 			
-			if (FlxG.keys.pressed("UP"))
-			{
-				_body.applyImpulse(Vec2.get(0, -ACCELERATION * FlxG.elapsed));
-				keyPressed = true;
-			}
-			else if (FlxG.keys.pressed("DOWN"))
-			{
-				_body.applyImpulse(Vec2.get(0, ACCELERATION * FlxG.elapsed));
-				facing = LEFT;
-				keyPressed = true;
-			}
 			
-			if (FlxG.keys.justPressed("SPACE"))
-			{
-				_bubbleEmitter.startEmit();
-			}
 			if (FlxG.keys.justReleased("SPACE"))
 			{
 				_bubbleEmitter.stopEmit();
@@ -104,10 +132,32 @@ package
 			
 			if (!_severed)
 			{
-				airDrain -= AIR_REGAIN;
+				airDrain -= AIR_TUBE_REGAIN;
+			}
+			if (_touchingAir)
+			{
+				airDrain -= AIR_ZONE_REGAIN;
 			}
 			
-			currentAir = Math.min(maxAir, Math.max(0, currentAir - airDrain * FlxG.elapsed));
+			modifyAir( -airDrain * FlxG.elapsed);
+			
+			if (_exhausted && currentAir == maxAir)
+			{
+				_exhausted = false;
+				
+				PlayState.instance.hud.setPlayerExhausted(false);
+			}
+		}
+		
+		private function modifyAir(amt:Number) : void
+		{
+			var aboveZero:Boolean = currentAir > 0;
+			currentAir = Math.min(maxAir, Math.max(0, currentAir + amt));
+			if (currentAir <= 0)
+			{
+				becomeExhausted();
+			}
+			
 		}
 		
 		public function sever() : void
@@ -122,6 +172,32 @@ package
 			collisionGroup = InteractionGroups.PLAYER;
 			collisionMask = ~InteractionGroups.NO_COLLIDE;
 			collisionMask = ~(InteractionGroups.NO_COLLIDE); // | InteractionGroups.PLAYER_ATTACK);
+		}
+		
+		public function damage() : void
+		{
+			if (_lastDamageTime < getTimer() + DAMAGE_COOLDOWN)
+			{
+				_lastDamageTime = getTimer();
+				
+				modifyAir( -DAMAGE_AIR);
+				body.applyImpulse(body.velocity.normalise().mul( -DAMAGE_IMPULSE));
+				flicker();
+			}
+			
+			
+		}
+		
+		public function becomeExhausted() : void
+		{
+			_exhausted = true;
+			currentAir = 0;
+			PlayState.instance.hud.setPlayerExhausted(true);
+		}
+		
+		public function onTouchAir(bool:Boolean) : void
+		{
+			_touchingAir = bool;
 		}
 		
 	}

@@ -12,6 +12,9 @@ package
 	import com.zillix.zlxnape.demos.ZlxNapeDemo;
 	import com.zillix.zlxnape.ZlxNapeSprite;
 	import flash.text.engine.BreakOpportunity;
+	import nape.callbacks.PreCallback;
+	import nape.callbacks.PreFlag;
+	import nape.callbacks.PreListener;
 	
 	import com.zillix.utils.ZGroupUtils;
 	
@@ -43,7 +46,7 @@ package
 
 	public class PlayState extends FlxState
 	{
-		[Embed(source = "data/map1.png")]	public var Map1:Class;
+		[Embed(source = "data/map1small.png")]	public var Map1:Class;
 		
 		public static var instance:PlayState;
 		
@@ -65,18 +68,20 @@ package
 		
 		public var terrainLayer:FlxGroup = new FlxGroup();
 		public var bubbleLayer:FlxGroup = new FlxGroup();
-		private var tubeLayer:FlxGroup = new FlxGroup();
-		private var plantLayer:FlxGroup = new FlxGroup();
+		public var tubeLayer:FlxGroup = new FlxGroup();
+		public var plantLayer:FlxGroup = new FlxGroup();
 		private var rockLayer:FlxGroup = new FlxGroup();
 		private var hudLayer:FlxGroup = new FlxGroup();
 		public var enemyLayer:FlxGroup = new FlxGroup();
 		private var enemyNodeLayer:FlxGroup = new FlxGroup();
 		public var darkLayer:FlxGroup = new FlxGroup();
 		public var glowLayer:FlxGroup = new FlxGroup();
+		public var airZoneLayer:FlxGroup = new FlxGroup();
 		
+		public var segmentLayer:FlxGroup = new FlxGroup();
 		
 		private var darkness:Darkness;
-		private var hud:Hud;
+		public var hud:Hud;
 		
 		public static const GRAVITY:Number = 200;
 		public static const FRAME_RATE :Number = 1 / 30;
@@ -89,13 +94,19 @@ package
 		// Things mapReader sets
 		public var playerSpawn:FlxPoint = new FlxPoint();
 		
+		public var depthDarkness:Number = 0;
+		public static const MAX_DARKNESS_OFFSET:Number = 200;
+		public var maxDarknessY:Number = 1;
+		
+		public var paused:Boolean = false;
+		
 		override public function create():void
 		{
 			instance = this;
 			FlxG.bgColor = 0xffdddddd;
 			
 			
-			bubbleRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer);
+			bubbleRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer.members);
 			add(bubbleRenderer);
 			//fluidRenderer.alpha = .5;
 			
@@ -105,11 +116,12 @@ package
 			add(tubeLayer);
 			add(plantLayer);
 			add(rockLayer);
+			add(segmentLayer);
 			add(enemyNodeLayer);
 			add(enemyLayer);
 			
 			
-			
+			add(airZoneLayer);
 			add(darkLayer);
 			
 			add(hudLayer);
@@ -133,10 +145,11 @@ package
 			
 			mapReader = new MapReader(this);
 			mapReader.readMap(Map1, PIXEL_WIDTH);
+			maxDarknessY = mapReader.worldHeight - MAX_DARKNESS_OFFSET;
 			
 			player.setPosition(playerSpawn.x, playerSpawn.y);
 			
-			for each (var obj:ZlxNapeSprite in tubeLayer.members)
+			for each (var obj:FlxSprite in tubeLayer.members)
 			{
 				if (obj is BreathingTube)
 				{
@@ -158,12 +171,92 @@ package
 			
 			setUpListeners();
 			
+			var text:Vector.<PlayText> = new Vector.<PlayText>();
+			addText(text, "be very careful down here");
+			addText(text, "we need to collect the orbs");
+			addText(text, "we can extend the rope whenever you return an orb");
+			queueText(text);
+			
 		}
 		
 		private function setUpListeners() : void
 		{
 			var touchPickup:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CallbackTypes.PLAYER, CallbackTypes.PICKUP, playerTouchPickup, 2);
 			space.listeners.add(touchPickup);
+			
+			var touchEnemy:PreListener = new PreListener(InteractionType.COLLISION,
+				CallbackTypes.PLAYER,
+				CallbackTypes.ENEMY,
+				playerTouchEnemy)
+			space.listeners.add(touchEnemy);
+			
+			var playerTouchAir:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.FLUID, CallbackTypes.PLAYER, CallbackTypes.AIR, onPlayerTouchAir, 2);
+			space.listeners.add(playerTouchAir);
+			
+			var playerStopTouchAir:InteractionListener = new InteractionListener(CbEvent.END, InteractionType.FLUID, CallbackTypes.PLAYER, CallbackTypes.AIR, onPlayerStopTouchAir, 2);
+			space.listeners.add(playerStopTouchAir);
+			
+			var bubbleTouchAir:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.FLUID, CallbackTypes.BUBBLE, CallbackTypes.AIR, onBubbleTouchAir, 2);
+			space.listeners.add(bubbleTouchAir);
+		}
+		
+		private function onPlayerTouchAir(collision:InteractionCallback) : void
+		{
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
+			if (obj1 is Player)
+			{
+				Player(obj1).onTouchAir(true);
+			}
+			if (obj2 is Player)
+			{
+				Player(obj2).onTouchAir(true);
+			}
+		}
+		
+		private function onPlayerStopTouchAir(collision:InteractionCallback) : void
+		{
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
+			if (obj1 is Player)
+			{
+				Player(obj1).onTouchAir(false);
+			}
+			if (obj2 is Player)
+			{
+				Player(obj2).onTouchAir(false);
+			}
+		}
+		
+		private function onBubbleTouchAir(collision:InteractionCallback) : void
+		{
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
+			if (obj1 is Bubble)
+			{
+				Bubble(obj1).onTouchAir();
+			}
+			if (obj2 is Bubble)
+			{
+				Bubble(obj2).onTouchAir();
+			}
+		}
+		
+		private function playerTouchEnemy(cb:PreCallback):PreFlag {
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(cb.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(cb.int2);
+			if (obj1 is Player)
+			{
+				Player(obj1).damage();
+				hud.onPlayerDamage();
+			}
+			
+			if (obj2 is Player)
+			{
+				Player(obj2).damage();
+				hud.onPlayerDamage();
+			}
+			return PreFlag.IGNORE;
 		}
 		
 		private function playerTouchPickup(collision:InteractionCallback) : void
@@ -182,8 +275,14 @@ package
 		
 		override public function update():void
 		{
-			space.step(FRAME_RATE, 5, 3);
+			if (!paused)
+			{
+				space.step(FRAME_RATE, 5, 3);
+			}
+			
 			super.update();	
+			
+			depthDarkness = FlxG.camera.scroll.y / maxDarknessY;
 			
 			if (DEBUG)
 			{
@@ -196,7 +295,7 @@ package
 					debug.flush();
 				}
 				
-				if (FlxG.keys.justPressed("P"))
+				if (FlxG.keys.justPressed("O"))
 				{
 					DEBUG_DRAW = !DEBUG_DRAW;
 					if (!DEBUG_DRAW)
@@ -204,6 +303,21 @@ package
 						debug.clear();
 						debug.flush();
 					}
+				}
+				
+				if (FlxG.keys.justPressed("T"))
+				{
+					extendTube(1);
+				}
+				
+				if (FlxG.keys.justPressed("D"))
+				{
+					darkness.visible = !darkness.visible;
+				}
+				
+				if (FlxG.keys.justPressed("P"))
+				{
+					paused = !paused;
 				}
 			}
 			
@@ -232,7 +346,7 @@ package
 		
 		public function severTube() : void
 		{
-			for each (var tube:ZlxNapeSprite in tubeLayer.members)
+			for each (var tube:FlxSprite in tubeLayer.members)
 			{
 				if (tube is BreathingTube)
 				{
@@ -269,7 +383,17 @@ package
 			const ROCK_COLOR:uint = 0xff571730;
 			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
 			rock.createBody(100, 40, bodyContext);
-			rock.setMaterial(new Material(1, 1, 1, 3.3, .001));
+			rock.setMaterial(new Material(1, 1, 1, Water.DENSITY + .3, .001));
+			rockLayer.add(rock);
+			
+		}
+		
+		public function addSmallRock(X:Number, Y:Number) : void
+		{
+			const ROCK_COLOR:uint = 0xff571730;
+			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
+			rock.createBody(20, 20, bodyContext);
+			rock.setMaterial(new Material(1, 2, 2, Water.DENSITY + .3, .001));
 			rockLayer.add(rock);
 			
 		}
@@ -277,7 +401,7 @@ package
 		
 		public function addJellyfish(X:Number, Y:Number) : void
 		{
-			var jellyFish:JellyFish = new JellyFish(X, Y, bodyContext, enemyNodeLayer);
+			var jellyFish:JellyFish = new JellyFish(X, Y, bodyContext, enemyNodeLayer, segmentLayer);
 			enemyLayer.add(jellyFish);
 		}
 		
@@ -296,6 +420,51 @@ package
 			glowLayer.add(glow);
 			
 			return glow;
+		}
+		
+		public function queueText(text:Vector.<PlayText>) : void
+		{
+			hud.textUI.textPlayer.queue(text);
+		}
+		
+		protected static function addText(vec:Vector.<PlayText>, text:String, duration:int = -1) : void
+		{
+			if (duration < 0)
+			{
+				duration = PlayText.DEFAULT_DURATION;
+			}
+			
+			vec.push(new PlayText(text, duration));
+		}
+		
+		public function onOrbReturned() : void
+		{
+			var text:Vector.<PlayText> = new Vector.<PlayText>();
+			addText(text, "you collected an orb!");
+			queueText(text);
+			
+			extendTube(15);
+		}
+		
+		public function getTube() : BreathingTube
+		{
+			return tubeLayer.members[0] as BreathingTube;
+		}
+		
+		private function extendTube(amt:int) : void
+		{
+			getTube().extend(amt);
+		}
+		
+		public function addAirZone(startPoint:FlxPoint, endPoint:FlxPoint) : void
+		{
+			airZoneLayer.add(new AirZone(startPoint, endPoint, bodyContext));
+		}
+		
+		public function addTrapDoor(X:Number, Y:Number) : void
+		{
+			var trapDoor:TrapDoor = new TrapDoor(X, Y, bodyContext, rockLayer);
+			rockLayer.add(trapDoor);
 		}
 	}
 }

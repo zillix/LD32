@@ -4,33 +4,40 @@ package
 	import com.zillix.zlxnape.ColorSprite;
 	import com.zillix.zlxnape.*;
 	import flash.display.DisplayObject;
+	import flash.display.Sprite;
+	import nape.constraint.Constraint;
 	import nape.constraint.PivotJoint;
 	import nape.constraint.DistanceJoint;
 	import nape.geom.Vec2;
 	import nape.phys.Material;
 	import org.flixel.FlxGroup;
 	import nape.phys.BodyType;
-	import org.flixel.FlxObject;
+	import org.flixel.*;
 	/**
 	 * ...
 	 * @author zillix
 	 */
 	public class BreathingTube extends ColorSprite
 	{
+		[Embed(source = "data/tubeSegment.png")]	public var SegmentSprite:Class;
+		
 		private static const SEGMENT_WIDTH:int = 8;
 		private static const SEGMENT_HEIGHT:int = 16;
-		private static const MAX_SEGMENTS:int = 40;
+		private static const MAX_SEGMENTS:int = 100;
+		private static const STARTING_SEGMENTS:int = 15;
 		private static const SEGMENT_COLOR:uint = 0xffdddddd;
 			
 		
 		private var _tubeLayer:FlxGroup;
 		
-		private var _playerJoint:DistanceJoint;
+		private var _playerJoint:Constraint;
 		private var _player:Player;
 		
 		private var _bubbleEmitter:BubbleEmitter;
 		
 		private var _chain:BodyChain;
+		
+		private var _tubeRenderer:BlurRenderer;
 		
 		
 		
@@ -52,10 +59,12 @@ package
 				SEGMENT_HEIGHT,
 				SEGMENT_COLOR,
 				1,
-				4);
+				2);
 				
+			_chain.segmentSpriteClass = SegmentSprite;
+			_chain.fluidMask = ~InteractionGroups.NO_COLLIDE;
 				
-			_chain.segmentMaterial = new Material(0, 1, 2, .01);
+			_chain.segmentMaterial = new Material(0, 0, 0, 3.2);
 			_chain.segmentCollisionMask = InteractionGroups.TERRAIN;
 			
 			collisionGroup = InteractionGroups.TERRAIN;
@@ -65,13 +74,23 @@ package
 		public function init() : void
 		{
 			_chain.init();
+			for (var i:int = 0; i < (MAX_SEGMENTS - STARTING_SEGMENTS); i++)
+			{
+				_chain.withdrawSegment();
+			}
 			//initSegments(_player);
 			
 			var lastSegment:ZlxNapeSprite = _chain.segments[_chain.segments.length - 1];
-			 _playerJoint = new DistanceJoint(lastSegment.body, _player.body, 
-				Vec2.weak(), Vec2.weak(), 5, 20);
+			 _playerJoint = new PivotJoint(lastSegment.body, _player.body, 
+				Vec2.get(), Vec2.get());// , 1, 2);
 			
 			_playerJoint.space = _body.space;
+			_playerJoint.maxForce = 1000000;
+			
+			
+			//_tubeRenderer = new ChainRenderer(FlxG.width, FlxG.height, _chain.getArray(), SEGMENT_WIDTH, SEGMENT_HEIGHT, 0xff0000);
+			//PlayState.instance.tubeLayer.add(_tubeRenderer);
+		
 		}
 		
 		public override function update() : void
@@ -89,6 +108,14 @@ package
 			_playerJoint.active = false;
 			_bubbleEmitter = new BubbleEmitter(_chain.segments[_chain.segments.length - 1], PlayState.instance, 1);
 			_bubbleEmitter.startEmit();
+		}
+		
+		public function extend(amt:int) : void
+		{
+			for (var i:int = 0; i < amt; ++i)
+			{
+				_chain.extendSegment();
+			}
 		}
 	}
 	

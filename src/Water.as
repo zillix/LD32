@@ -17,7 +17,7 @@ package
 		{
 			super(X, Y);
 			createBody(Width, Height, Context, BodyType.STATIC);
-			var fluidProperties:FluidProperties = new FluidProperties(DENSITY, 4);
+			var fluidProperties:FluidProperties = new FluidProperties(DENSITY, 2);
 			body.setShapeFluidProperties(fluidProperties);
 			collisionMask = 0;
 			fluidMask = ~InteractionGroups.NO_COLLIDE;

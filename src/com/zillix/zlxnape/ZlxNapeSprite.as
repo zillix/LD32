@@ -43,6 +43,10 @@ package com.zillix.zlxnape
 		protected var _defaultScale:Number = 1;
 		
 		private var _collisionGroup:uint = ~InteractionGroups.NO_COLLIDE;
+		
+		
+		
+		protected var _canRotate:Boolean = true;
         
         public function ZlxNapeSprite(X:Number, Y:Number)
         {
@@ -174,11 +178,20 @@ package com.zillix.zlxnape
 				{
 					_body.space == null;
 				}
+				
+				if (!_body.space)
+				{
+					return;
+				}
 			}
 			
           	x = _body.position.x - _origOffset.x;
 			y = _body.position.y - _origOffset.y;
-			angle = ZMathUtils.toDegrees(_body.rotation);
+			
+			if (_canRotate)
+			{
+				angle = ZMathUtils.toDegrees(_body.rotation);
+			}
 			
 			if (_body.type != BodyType.STATIC)
 			{
@@ -330,11 +343,13 @@ package com.zillix.zlxnape
 		{
 			visible = false;
 			_body.space = null;
+			active = false;
 		}
 		
 		public function enable(space:Space) : void
 		{
 			visible = true;
+			active = true;
 			_body.space = space;
 		}
 		
@@ -392,6 +407,8 @@ package com.zillix.zlxnape
 				Shape(_body.shapes.at(i)).fluidEnabled = true;
 				Shape(_body.shapes.at(i)).fluidProperties = fluidProperties;
 			}
+			
+			body.type = BodyType.STATIC;
 		}
 		
 		public function setMaterial(material:Material) : void

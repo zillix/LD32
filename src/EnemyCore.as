@@ -29,7 +29,8 @@ package
 		private var _nodeLayer:FlxGroup;
 		private var _joints:Vector.<DistanceJoint>;
 		
-		public static const JOINT_BREAK_FORCE:Number = 150;
+		public static const JOINT_BREAK_FORCE:Number = 120;
+		public static const JOINT_BREAK_FORCE_WEAK:Number = 80;
 		public static const JOINT_BREAK_DIST:Number = 40;
 		
 		private var _nodesRemoved:Boolean = false;
@@ -58,6 +59,8 @@ package
 			
 			_nodeLayer = NodeLayer;
 			_joints = new Vector.<DistanceJoint>();
+			
+			addCbType(CallbackTypes.ENEMY);
 			
 			for (var i:int = 0; i < _nodeCount; i++)
 			{
@@ -124,6 +127,11 @@ package
 				onNodesRemoved();
 			}
 			
+			if (nodeCount == 1)
+			{
+				weakenJoints();
+			}
+			
 			var leashDist:Number = body.position.sub(_spawnPoint).length;
 			if (leashDist > _leashStartDist)
 			{
@@ -145,6 +153,17 @@ package
 					{
 						node.body.applyImpulse(impulse);
 					}
+				}
+			}
+		}
+		
+		protected function weakenJoints() : void
+		{
+			for each (var joint:DistanceJoint in _joints)
+			{
+				if (joint != null)
+				{
+					joint.maxForce = JOINT_BREAK_FORCE_WEAK;
 				}
 			}
 		}
@@ -175,7 +194,7 @@ package
 		
 		protected function ejectPearl() : void
 		{
-			var pearl:EnemyPearl = new EnemyPearl(x, y, PlayState.instance.bodyContext, radius);
+			var pearl:EnemyPearl = new EnemyPearl(x, y, PlayState.instance.bodyContext, radius, PlayState.instance.getTube());
 			_glow.target = pearl;
 			_nodeLayer.add(pearl);
 		}

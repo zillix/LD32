@@ -16,6 +16,12 @@ package
 		private var BAR_HEIGHT:Number = 20;
 		private var OUTLINE_BUFFER:Number = 4;
 		
+		private var _currentFraction:Number = 1;
+		
+		private var AIR_BAR_COLOR:uint = 0xff5EECEB;
+		private var EXHAUSTED_COLOR:uint = 0xffff0000;
+		private var BAR_RATE:Number = 1;
+		
 		public function AirBar(X:Number, Y:Number)
 		{
 			super();
@@ -39,7 +45,17 @@ package
 		
 		public function render(fraction:Number):void 
 		{
-			innerBar.width = fraction * outerBar.width;
+			if (_currentFraction < fraction)
+			{
+				_currentFraction = Math.max(fraction, _currentFraction + BAR_RATE * FlxG.elapsed);
+			}
+			
+			if (_currentFraction > fraction)
+			{
+				_currentFraction = Math.min(fraction, _currentFraction - BAR_RATE * FlxG.elapsed);
+			}
+			
+			innerBar.width = _currentFraction * outerBar.width;
 			innerBar.scale.x = innerBar.width / DEFAULT_LENGTH;
 			outerBar.scale.x = outerBar.width / DEFAULT_LENGTH;
 			
@@ -47,16 +63,29 @@ package
 			outline.scale.x = outline.width / (DEFAULT_LENGTH + OUTLINE_BUFFER)
 			super.update();
 			
+			
+			
 		}
 		
+		public function flicker() : void
+		{
+			for each (var flxObj:FlxSprite in members)
+			{
+				flxObj.flicker();
+			}
+		}
 		
-		
-		
-		
-		
-		
-		
-		
+		public function setExhausted(bool:Boolean) : void
+		{
+			if (bool)
+			{
+				innerBar.color = EXHAUSTED_COLOR;
+			}
+			else
+			{
+				innerBar.color = AIR_BAR_COLOR;
+			}
+		}
 		
 	}
 	
