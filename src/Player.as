@@ -8,13 +8,16 @@ package
 	import nape.geom.Vec2;
 	import org.flixel.*;
 	import flash.utils.getTimer;
+	import com.zillix.utils.ZMathUtils;
 	
 	/**
 	 * ...
 	 * @author zillix
 	 */
-	public class Player extends ColorSprite
+	public class Player extends ZlxNapeSprite
 	{
+		[Embed(source = "data/player.png")]	public var PlayerSprite:Class;
+		
 		public var EXHAUSTED_ACCELERATION:int = 3500;
 		
 		public var ACCELERATION:int = 5500; // 5500;
@@ -48,23 +51,35 @@ package
 		
 		public var bouyant:Boolean = false;
 		
+		public var ROTATE_SPEED:Number = 360;
+		
 		public function Player(X:Number, Y:Number, Context:BodyContext)
 		{
-			super(X, Y, 0xffff0000);
-			createBody(15, 15, Context);
+			super(X, Y);
+			createBody(16, 16, Context);
 			this.body.setShapeMaterials(normalFriction);
 			maxVelocity.x = MAX_SPEED;
 			maxVelocity.y = MAX_SPEED;
+			scale.x = scale.y = 2;
 			_bubbleEmitter = new BubbleEmitter(this, PlayState.instance);
 			setMaterial(new Material(1, 1, 2, Water.DENSITY - .2, 0.001));
 			addCbType(CallbackTypes.PLAYER);
 			
-			PlayState.instance.attachGlow(this, 200);
+			PlayState.instance.attachGlow(this, 300);
+			
+			loadGraphic(PlayerSprite, true, true, 16, 16);
+			//loadRotatedGraphic(PlayerSprite, 128, -1, false, true);
+			addAnimation("float", [0, 1, 2, 3, 4, 3, 2, 1], 3);
+			addAnimation("swim", [0, 1, 2, 3, 4, 3, 2, 1], 8);
+			play("float");
+			
+			_canRotate = false;
+			
 		}
 		
 		public function get canMove() : Boolean
 		{
-			return (PlayState.hasOneEnding || PlayState.instance.viewedOneOrb) && 
+			return (PlayState.hasOneEnding) && 
 			PlayState.instance.startedGame &&
 			  !PlayState.instance.endingGame;
 		}
@@ -86,8 +101,8 @@ package
 				else if (FlxG.keys.pressed("LEFT"))
 				{
 					_body.applyImpulse(Vec2.get(-ACCELERATION * FlxG.elapsed));
-					facing = LEFT;
 					keyPressed = true;
+					facing = LEFT;
 				}
 			}
 			if (!_exhausted)
@@ -102,7 +117,6 @@ package
 					else if (FlxG.keys.pressed("DOWN"))
 					{
 						_body.applyImpulse(Vec2.get(0, ACCELERATION * FlxG.elapsed));
-						facing = LEFT;
 						keyPressed = true;
 					}
 				}
@@ -111,6 +125,70 @@ package
 				{
 					_bubbleEmitter.startEmit();
 				}
+			}
+			
+			if (keyPressed)
+			{
+				play("swim");
+			}
+			else
+			{
+				play("float");
+			}
+			
+			
+			
+			var desiredAngle:Number = angle;// = ZMathUtils.toDegrees(body.velocity.angle);
+			/*if (facing == LEFT)
+			{
+				desiredAngle = -180 -  desiredAngle;
+			}*/
+			
+			if (FlxG.keys.RIGHT || FlxG.keys.LEFT)
+			{
+				desiredAngle = 0;
+			}
+			
+			if (FlxG.keys.UP)
+			{
+				if (FlxG.keys.RIGHT || FlxG.keys.LEFT)
+				{
+					desiredAngle = -45;
+				}
+				else
+				{
+					desiredAngle = -90;
+				}
+			}
+			
+			if (FlxG.keys.DOWN)
+			{
+				if (FlxG.keys.RIGHT || FlxG.keys.LEFT)
+				{
+					desiredAngle = 45;
+				}
+				else
+				{
+					desiredAngle = 90;
+				}
+			}
+			
+			if (facing == LEFT)
+			{
+				desiredAngle = - desiredAngle;
+			}
+			
+			
+			
+			
+			
+			if (angle < desiredAngle)
+			{
+				angle = Math.min(desiredAngle, angle + FlxG.elapsed * ROTATE_SPEED);
+			}
+			else
+			{
+				angle = Math.max(desiredAngle, angle - FlxG.elapsed * ROTATE_SPEED);
 			}
 			
 			if (bouyant)
@@ -124,10 +202,11 @@ package
 				_bubbleEmitter.stopEmit();
 			}
 			
-			if (FlxG.keys.justPressed("F"))
+			if (FlxG.keys.justPressed("R"))
 			{
 				sever();
 				PlayState.instance.severTube();
+				PlayState.instance.rKey.visible = false;
 			}
 			
 			_bubbleEmitter.update();

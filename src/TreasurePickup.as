@@ -35,8 +35,11 @@ package
 		{
 			collisionMask = 0;
 			//body.type = BodyType.KINEMATIC;
+			_minFollowDist = 0;
 			followTarget(PlayState.instance.player, 100, 200);
-			PlayState.instance.player.onTreasurePickedUp();
+			//PlayState.instance.player.onTreasurePickedUp();
+			PlayState.instance.endGame(PlayState.END_TREASURE);
+			kill();
 		}
 		
 		override public function update() : void

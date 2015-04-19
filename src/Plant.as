@@ -13,7 +13,7 @@ package
 	 */
 	public class Plant extends ColorSprite 
 	{
-		[Embed(source = "data/frondSegment.png")]	public var FrondSegment:Class;
+		[Embed(source = "data/frondSegment2.png")]	public var FrondSegment:Class;
 		
 		public static const FALL_PLANT:int = 0;
 		public static const RISE_PLANT:int = 1;
@@ -32,7 +32,9 @@ package
 		public function Plant(X:Number, Y:Number, PlantLayer:FlxGroup, Context:BodyContext, Fronds:int = 3, FrondSize:int = 4, plantType:int = FALL_PLANT, minDist:int = 4, maxDist:int = 8)
 		{
 			super(X, Y, SUB_COLOR);
-			createBody(40, 20, Context, BodyType.STATIC);
+			createBody(60, 20, Context, BodyType.STATIC);
+			
+			visible = false;
 			
 			var chain:BodyChain;
 			var segmentCollisionMask:uint = InteractionGroups.PLAYER | InteractionGroups.BUBBLE | InteractionGroups.ENEMY;

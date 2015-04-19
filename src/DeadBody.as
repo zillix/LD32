@@ -17,6 +17,7 @@ package
 		{
 			super(X, Y);
 			loadGraphic(DeadSprite);
+			scale.x = scale.y = 2;
 			createBody(width, height, Context, BodyType.STATIC);
 			addCbType(CallbackTypes.DEADBODY);
 		}

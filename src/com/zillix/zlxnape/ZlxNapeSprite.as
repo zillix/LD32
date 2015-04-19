@@ -29,12 +29,13 @@ package com.zillix.zlxnape
 		protected var _body:Body; 
 		public function get body() : Body { return _body; }
 		
-		private var _origOffset:Vec2; 
+		protected var _origOffset:Vec2; 
 		public function get origOffset():Vec2 {return _origOffset;}
         
 		private var _target:FlxObject;
+		protected var _minFollowDist:Number = 50;
 		
-		private var _maxSpeed:Number = 1000;
+		protected var _maxSpeed:Number = 1000;
 		private var _accelerationRate:Number = 0;
 		
 		protected var _bodyRegistry:BodyRegistry;
@@ -262,10 +263,13 @@ package com.zillix.zlxnape
 			if (_target != null)
 			{
 				var direction:Vec2 = Vec2.get(_target.x, _target.y).sub(Vec2.get(x, y));
-				body.allowRotation = false;
-				body.rotation = 0;
-				var mult:Vec2 = direction.mul(_accelerationRate * FlxG.elapsed);
-				_body.applyImpulse(mult);
+				if (direction.length > _minFollowDist)
+				{
+					body.allowRotation = false;
+					body.rotation = 0;
+					var mult:Vec2 = direction.mul(_accelerationRate * FlxG.elapsed);
+					_body.applyImpulse(mult);
+				}
 			}
 			
 			super.update();

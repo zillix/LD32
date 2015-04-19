@@ -55,7 +55,7 @@ package
 			terrain.collisionGroup = InteractionGroups.TERRAIN;
 			body.type = BodyType.STATIC;
 			
-			_state.terrainLayer.add(terrain);
+			//_state.terrainLayer.add(terrain);
 			
 			
 			/*var terrainBack:FlxSprite = new FlxSprite(0, 0, TerrainBack);

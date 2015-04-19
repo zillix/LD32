@@ -72,6 +72,8 @@ package
 			
 			chain.addCbType(CallbackTypes.ENEMY);
 			
+			_glow.setRadius(300);
+			
 		}
 		
 		override public function update() : void

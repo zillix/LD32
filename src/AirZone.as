@@ -24,6 +24,8 @@ package
 			addCbType(CallbackTypes.AIR);
 			
 			collisionGroup = InteractionGroups.TERRAIN;
+			
+			alpha = .5
 		}
 		
 	}

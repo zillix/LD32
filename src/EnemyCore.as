@@ -46,7 +46,7 @@ package
 		private var _leashing:Boolean = false;
 		private var _impulseAccel:Number = 4;
 		
-		private var _glow:Glow;
+		protected var _glow:Glow;
 		
 		
 		public function EnemyCore(X:Number, Y:Number, Context:BodyContext, NodeLayer:FlxGroup, NodeCount:int)

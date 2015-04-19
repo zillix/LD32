@@ -72,6 +72,9 @@ package
 			
 			chain.addCbType(CallbackTypes.ENEMY);
 			
+			
+			_glow.setRadius(200);
+			
 		}
 		
 		override protected function setupNodes() : void
@@ -80,7 +83,7 @@ package
 			_nodeCount = 5;
 			_coreRadius = 20;
 			_nodeRadius = 35;
-			_nodeDesnsity = 2;
+			_nodeDesnsity = 3.2;
 			super.setupNodes();
 			makeInvincible();
 		}
@@ -90,6 +93,7 @@ package
 			super.update();
 			
 		}
+		
 		
 		override protected function killNode(index:int) : void
 		{

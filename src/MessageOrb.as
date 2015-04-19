@@ -7,6 +7,7 @@ package
 	import com.zillix.zlxnape.InteractionGroups;
 	import com.zillix.zlxnape.CallbackTypes;
 	import com.zillix.utils.ZMathUtils;
+	import nape.geom.Vec2;
 	/**
 	 * ...
 	 * @author zillix
@@ -20,9 +21,10 @@ package
 		public static const ORB_COOLDOWN:int = 5;
 		
 		private var _bubbleCount:int = 0;
-		public static const BUBBLES_REQUIRED:int = 7;
+		public static const BUBBLES_REQUIRED:int = 5;
 		public var busy:Boolean = false;
 		
+		private var _glow:Glow;
 		
 		
 		public function MessageOrb(X:Number, Y:Number, Context:BodyContext, Index:int)
@@ -31,11 +33,16 @@ package
 			_index = Index;
 			loadRotatedGraphic(OrbSprite, 32);
 			createCircleBody(width / 2, Context, BodyType.KINEMATIC);
+			_origOffset = Vec2.get(width / 2 , height / 2);
+			//offset.x = width / 2;
+			//offset.y = height / 2;
 			makeFluid(100, 0);
 			body.type = BodyType.KINEMATIC;
 			fluidMask = InteractionGroups.BUBBLE;
 			collisionMask = InteractionGroups.BUBBLE;
 			addCbType(CallbackTypes.MESSAGE);
+			
+			PlayState.instance.attachGlow(this, 100);
 			
 		}
 		
@@ -82,31 +89,39 @@ package
 			var text:Vector.<PlayText> = new Vector.<PlayText>();
 			switch (index)
 			{
-				case 0:
+				
+				/*case -1:
 					PlayText.addText(text, "your breath gives you power here, child", -1, onMessageComplete);
+					break;
+				*/
+				case 0:
+					PlayText.addText(text, "your breath has power here, child", -1, onMessageComplete);
 					break;
 					
 				case 1:
-					PlayText.addText(text, "poor, beautiful creatures");
-					PlayText.addText(text, "deadly to touch, but crumble at a breeze", -1);
+					PlayText.addText(text, "the core of a jelly is valuable", -1);
+					PlayText.addText(text, "is that what you were sent here for?", -1);
+					PlayText.addText(text, "if you bring one back, will they loosen your leash?", -1, onMessageComplete);
 					
 					break;
 					
 				case 2:
-					PlayText.addText(text, "there are so few of them left", -1);
-					PlayText.addText(text, "they were hunted long ago, by people like you", -1, onMessageComplete);
+					PlayText.addText(text, "poor, beautiful creatures");
+					PlayText.addText(text, "there are so few of them left", -1, null);
+					PlayText.addText(text, "the one who came before you was not here to hunt", -1, onMessageComplete);
+					
 					
 					break;
 					
 				case 3:
-					PlayText.addText(text, "are you searching for him, or for what he sought?");
-					PlayText.addText(text, "they're both long gone, by now", -1, onMessageComplete);
+					PlayText.addText(text, "are you searching for him?");
+					PlayText.addText(text, "what do you expect to find?", -1, onMessageComplete);
 					
 					break;
 					
 				case 4:
-					PlayText.addText(text, "he followed down here when he spotted me");
-					PlayText.addText(text, "he didn't realize just how deep this goes", -1, onMessageComplete);
+					PlayText.addText(text, "he came down here to find me");
+					PlayText.addText(text, "he didn't realize how deep this goes", -1, onMessageComplete);
 					
 					break;
 					
@@ -122,20 +137,19 @@ package
 					
 				case 7:
 					PlayText.addText(text, "your ties to the world hold you back");
-					PlayText.addText(text, "release them, and be [F]ree", -1, onMessageComplete);
+					PlayText.addText(text, "[R]elease them, and be free", -1, 
+					function() : void
+					{
+						PlayState.instance.rKey.visible = true;
+						onMessageComplete();
+					});
 					break;
 					
-				case 7:
-					if (PlayState.instance.jellyKilled)
-					{
-						PlayText.addText(text, "beyond lies the den");
-						PlayText.addText(text, "you have shown yourself to be a predator");
-						PlayText.addText(text, "you are not welcome");
-					}
-					else
-					{
-						PlayText.addText(text, "this is not the best use of breath");
-					}
+				case 8:
+					PlayText.addText(text, "they guard his resting place");
+					PlayText.addText(text, "they will never let a predator pass", -1, onMessageComplete);
+					break;
+					
 					
 				default:
 					trace("Unhandled message!");

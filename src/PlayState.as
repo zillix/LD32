@@ -49,6 +49,11 @@ package
 	{
 		[Embed(source = "data/map1shafttiny.png")]	public var Map1:Class;
 		
+		[Embed(source = "data/mapcoverbig.png")]	public var CoverSprite:Class;
+		
+		[Embed(source = "data/mapbackground.png")]	public var BackgroundSprite:Class;
+		[Embed(source = "data/scrollbackgroundbrown.png")]	public var ScrollBackgroundSprite:Class;
+		[Embed(source = "data/rKey.png")]	public var RKeySprite:Class;
 		public static var instance:PlayState;
 		
 		public var player:Player;
@@ -86,10 +91,18 @@ package
 		public var treasureLayer:FlxGroup = new FlxGroup();
 		
 		public var endFadeLayer:FlxGroup = new FlxGroup();
+		public var playerLayer:FlxGroup = new FlxGroup();
+		public var backgroundLayer:FlxGroup = new FlxGroup();
+		public var scrollBackgroundLayer:FlxGroup = new FlxGroup();
+		public var coverLayer:FlxGroup = new FlxGroup();
 		
 		public var segmentLayer:FlxGroup = new FlxGroup();
 		
+		
+		public var endCoverLayer:FlxGroup = new FlxGroup();
+		
 		private var darkness:Darkness;
+		public var blueColor:Darkness;
 		public var hud:Hud;
 		
 		public static const GRAVITY:Number = 100;
@@ -104,15 +117,15 @@ package
 		public var playerSpawn:FlxPoint = new FlxPoint();
 		
 		public var depthDarkness:Number = 0;
-		public static const MIN_DARKNESS_VAL:Number = .3;
-		public static const MAX_DARKNESS_VAL:Number = .8;
-		public static const MAX_DARKNESS_OFFSET:Number = 200;
+		public static const MIN_DARKNESS_VAL:Number = .7;
+		public static const MAX_DARKNESS_VAL:Number = 1;
+		public static const MAX_DARKNESS_OFFSET:Number = 600;
 		public var maxDarknessY:Number = 1;
 		
 		public var paused:Boolean = false;
 		
 		public var setupCompleteTime:int;
-		public var SETUP_DURATION:int = 1;
+		public var SETUP_DURATION:int = 2;
 		
 		public var activeOrb:MessageOrb =  null;
 		public var viewedOneOrb:Boolean = false;
@@ -146,6 +159,12 @@ package
 		
 		public var titleScreen:TitleScreen ;
 		
+		public var submarine:BreathingTube;
+		
+		public var rKey:FlxSprite;
+		
+		public var R_ALPHA_RATE:Number = .2;
+		
 		override public function create():void
 		{
 			instance = this;
@@ -163,6 +182,8 @@ package
 				}
 			}
 			
+			add(scrollBackgroundLayer);
+			add(backgroundLayer);
 			add(treasureLayer);
 			
 			bubbleRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer.members);
@@ -175,16 +196,19 @@ package
 			add(messageLayer);
 			add(bubbleLayer);
 			add(tubeLayer);
+			add(playerLayer);
 			add(plantLayer);
 			add(rockLayer);
 			add(segmentLayer);
 			add(enemyNodeLayer);
 			add(enemyLayer);
+			add(coverLayer);
 			
 			
 			add(darkLayer);
 			
 			add(endFadeLayer);
+			add(endCoverLayer);
 			add(hudLayer);
 			
 			
@@ -198,11 +222,14 @@ package
 			bodyContext = new BodyContext(space, bodyRegistry);
 			
 			
-			darkness = new Darkness(0, 0);
-			darkLayer.add(darkness);
+			darkness = new Darkness(0, 0, 0xff000000);
+			//darkLayer.add(darkness);
+			
+			blueColor =  new Darkness(0, 0,0xff172C47) ;
+			darkLayer.add(blueColor);
 			
 			player = new Player(0, 0, bodyContext);
-			add(player);
+			playerLayer.add(player);
 			
 			mapReader = new MapReader(this);
 			mapReader.readMap(Map1, PIXEL_WIDTH);
@@ -210,13 +237,14 @@ package
 			
 			player.setPosition(playerSpawn.x, playerSpawn.y);
 			
-			for each (var obj:FlxSprite in tubeLayer.members)
+			/*for each (var obj:FlxSprite in tubeLayer.members)
 			{
 				if (obj is BreathingTube)
 				{
 					(obj as BreathingTube).init();
 				}
-			}
+			}*/
+			submarine.init();
 			
 			water = new Water(0, 0, mapReader.worldHeight, mapReader.worldHeight, bodyContext);
 			//add(water);
@@ -224,8 +252,35 @@ package
 			
 			FlxG.camera.setBounds(0, 0, mapReader.worldWidth, mapReader.worldHeight);
 			playerFollower = new PlayerFollower(player.x, player.y, player);
-			add(playerFollower);
+			playerFollower.visible = false;
+			playerLayer.add(playerFollower);
 			FlxG.camera.follow(playerFollower);
+			
+			var scaleAmt:Number = 10;
+			var background:FlxSprite = new FlxSprite(0, 0, BackgroundSprite);
+			background.scale = new FlxPoint(scaleAmt, scaleAmt);
+			background.x += background.width * scaleAmt / 2 - 80;
+			background.y += background.height * scaleAmt / 2 - 190;
+			
+		//	backgroundLayer.add(background);
+			
+			var cover:FlxSprite = new FlxSprite(0, 0, CoverSprite);
+			cover.x += cover.width * scaleAmt / 2 - 80;
+			cover.y += cover.height * scaleAmt / 2 - 190;
+			//cover.offset = new FlxPoint(-cover.width / 2, -cover.height / 2);
+			//cover.offset.x = -cover.width; 
+			cover.scale = new FlxPoint(scaleAmt, scaleAmt);
+			
+			coverLayer.add(cover);
+			
+			
+			var scrollbackground:FlxSprite = new FlxSprite(0, 0, ScrollBackgroundSprite);
+			scrollbackground.x += scrollbackground.width * scaleAmt / 2 - 80;
+			scrollbackground.y += scrollbackground.height * scaleAmt / 2 - 190;
+			
+			scrollbackground.scale = new FlxPoint(scaleAmt, scaleAmt);
+			scrollbackground.scrollFactor = new FlxPoint(.5, .5);
+			scrollBackgroundLayer.add(scrollbackground);
 			
 			debug = new BitmapDebug(mapReader.worldWidth, mapReader.worldHeight, 0xdd000000, true );
 			FlxG.stage.addChild(debug.display);
@@ -286,11 +341,23 @@ package
 			
 			var playerTouchBody:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CallbackTypes.PLAYER, CallbackTypes.DEADBODY, onPlayerTouchBody, 2);
 			space.listeners.add(playerTouchBody);
+			
+			rKey = new FlxSprite(FlxG.width / 2, FlxG.height / 2, RKeySprite);
+			hudLayer.add(rKey);
+			rKey.visible = false;
+			rKey.alpha = 0;
+			rKey.offset = new FlxPoint(rKey.width / 2, rKey.height / 2);
+			rKey.scale = new FlxPoint(4, 4);
+			rKey.scrollFactor = new FlxPoint(0, 0);
 		}
 		
 		private function onPlayerTouchBody(collision:InteractionCallback) : void
 		{
 			endGame(END_BODY);
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
+			endCoverLayer.add(obj1);
+			endCoverLayer.add(obj2);
 		}
 		
 		private function onRockTouchEnemy(collision:InteractionCallback) : void
@@ -478,13 +545,12 @@ package
 			
 			super.update();	
 			
-			if (getTimer() < setupCompleteTime || !viewedOneOrb)
+			if (getTimer() < setupCompleteTime || (!hasOneEnding))
 			{
 				player.setPosition(playerSpawn.x, playerSpawn.y);
 			}
 			
 				depthDarkness = FlxG.camera.scroll.y / maxDarknessY * (MAX_DARKNESS_VAL - MIN_DARKNESS_VAL) + MIN_DARKNESS_VAL;
-			
 			if (endFade != null)
 			{
 				if (endFade.alpha < 1)
@@ -508,6 +574,15 @@ package
 			if (startedGame)
 			{
 				titleScreen.alpha -= FlxG.elapsed;
+			}
+			
+			if (rKey.visible)
+			{
+				if (player.severed)
+				{
+					rKey.visible = false;
+				}
+				rKey.alpha += FlxG.elapsed * R_ALPHA_RATE;
 			}
 				
 			
@@ -547,11 +622,6 @@ package
 					paused = !paused;
 				}
 				
-				if (FlxG.keys.justPressed("R"))
-				{
-					extendTube(ORB_COLLECT_TUBE_EXTEND);
-				}
-				
 				if (FlxG.keys.A)
 				{
 					player.currentAir = player.maxAir;
@@ -587,24 +657,28 @@ package
 		override public function draw():void 
 		{
 		   darkness.reDarken();
+		   blueColor.reDarken();
+		   
 		   super.draw();
 		 }
 		
 		public function setupTube(X:Number, Y:Number) : void
 		{
 			var tube:BreathingTube = new BreathingTube(X, Y, tubeLayer, player, bodyContext);
-			tubeLayer.add(tube);
+			submarine = tube;
+			plantLayer.add(tube);
 		}
 		
 		public function severTube() : void
 		{
+			submarine.sever();/*
 			for each (var tube:FlxSprite in tubeLayer.members)
 			{
 				if (tube is BreathingTube)
 				{
 					(tube as BreathingTube).sever();
 				}
-			}
+			}*/
 			
 			viewedOneOrb = true;
 		}
@@ -650,12 +724,11 @@ package
 			rock.collisionGroup = rock.collisionGroup | InteractionGroups.ROCK;
 			rock.setMaterial(new Material(1, 2, 2, Water.DENSITY + .3, .001));
 			rockLayer.add(rock);*/
-			const ROCK_COLOR:uint = 0xff571730;
-			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
-			rock.createBody(60, 60, bodyContext);
+			var rock:ColorSprite = new ColorSprite(X, Y, 0xffA6916A);
+			rock.createBody(60, 80, bodyContext);
 			rock.collisionGroup = rock.collisionGroup | InteractionGroups.ROCK;
-			rock.setMaterial(new Material(-5, 1, 1, Water.DENSITY, .001));
-			rockLayer.add(rock);
+			rock.setMaterial(new Material(-5, 0, 0, Water.DENSITY, .001));
+			backgroundLayer.add(rock);
 			rock.addCbType(CallbackTypes.ROCK);
 			
 		}
@@ -697,7 +770,7 @@ package
 		
 		public function getTube() : BreathingTube
 		{
-			return tubeLayer.members[0] as BreathingTube;
+			return submarine; // tubeLayer.members[0] as BreathingTube;
 		}
 		
 		private function extendTube(amt:int) : void
@@ -724,14 +797,14 @@ package
 			plat.setMaterial(new Material(1, 2, 2, Water.DENSITY + 4, .001));
 			plat.collisionMask = InteractionGroups.ROCK | InteractionGroups.PLAYER
 			
-			
+			plat.visible = false;
 			plat.body.type = BodyType.STATIC;
 			rockLayer.add(plat);
 		}
 		
 		public function addShrine(X:Number, Y:Number) : void
 		{
-			var treasure:Treasure = new Treasure(X, Y, bodyContext);
+			var treasure:Treasure = new Treasure(X, Y + 10, bodyContext);
 			//var shrine:Shrine = new Shrine(X, Y, bodyContext);
 			treasureLayer.add(treasure);
 		}
@@ -754,7 +827,7 @@ package
 		
 		public function addMessageOrb(X:Number, Y:Number) : void
 		{
-			var orb:MessageOrb = new MessageOrb(X, Y, bodyContext, messageLayer.members.length);
+			var orb:MessageOrb = new MessageOrb(X, Y, bodyContext, messageLayer.length);
 			messageLayer.add(orb);
 		}
 		
@@ -826,12 +899,12 @@ package
 					break;
 					
 				case END_JELLY:
-					PlayText.addText(text, "welcome to my home", -1, finishEndingGame, endTextColor);
+					PlayText.addText(text, "welcome", -1, finishEndingGame, endTextColor);
 					break;
 					
 					
 				case END_BODY:
-					PlayText.addText(text, "finally, you two reuinite", -1, finishEndingGame, endTextColor);
+					PlayText.addText(text, "finally, you two are reunited", -1, finishEndingGame, endTextColor);
 					break;
 					
 
@@ -854,6 +927,8 @@ package
 			{
 				save.data.endings = { };
 			}
+			
+			endCoverLayer.add(player);
 			
 			save.data.endings[ending] = true;
 			unlockedEndings.push(ending);
@@ -921,7 +996,7 @@ package
 		
 		public function addDeadBody(X:Number, Y:Number) : void
 		{
-			var deadBody:DeadBody = new DeadBody(X, Y, bodyContext);
+			var deadBody:DeadBody = new DeadBody(X, Y + 10, bodyContext);
 			rockLayer.add(deadBody);
 		}
 		

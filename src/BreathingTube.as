@@ -18,9 +18,10 @@ package
 	 * ...
 	 * @author zillix
 	 */
-	public class BreathingTube extends ColorSprite
+	public class BreathingTube extends ZlxNapeSprite
 	{
-		[Embed(source = "data/tubeSegment.png")]	public var SegmentSprite:Class;
+		[Embed(source = "data/tubeSegment2.png")]	public var SegmentSprite:Class;
+		[Embed(source = "data/submarine.png")]	public var SubmarineSprite:Class;
 		
 		private static const SEGMENT_WIDTH:int = 8;
 		private static const SEGMENT_HEIGHT:int = 16;
@@ -53,8 +54,10 @@ package
 		private static const SUB_COLOR:uint = 0xffffff00;
 		public function BreathingTube(X:Number, Y:Number, TubeLayer:FlxGroup, player:Player, Context:BodyContext)
 		{
-			super(X, Y, SUB_COLOR);
-			createBody(50, 50, Context, BodyType.STATIC);
+			super(X, Y);
+			loadGraphic(SubmarineSprite);
+			scale.x = scale.y = 2;
+			createBody(25, 25, Context, BodyType.STATIC);
 			
 			_tubeLayer = TubeLayer;
 			_player = player;
@@ -91,8 +94,8 @@ package
 			//initSegments(_player);
 			
 			var lastSegment:ZlxNapeSprite = _chain.segments[_chain.segments.length - 1];
-			 _playerJoint = new DistanceJoint(lastSegment.body, _player.body, 
-				Vec2.get(), Vec2.get(), 1, 2);// , 1, 2);
+			 _playerJoint = new PivotJoint(lastSegment.body, _player.body, 
+				getEdgeVector(DIRECTION_LEFT), Vec2.get());// , 1, 2);
 			
 			_playerJoint.space = _body.space;
 			_playerJoint.maxForce = 1000000;

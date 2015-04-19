@@ -4,6 +4,7 @@ package
 	import flash.display.BitmapData;
 	import flash.geom.Point;
 	import org.flixel.*;
+	import com.zillix.utils.ZMathUtils;
 	
 	/**
 	 * ...
@@ -15,11 +16,17 @@ package
 		
 		public var backupFramePixels:BitmapData;
 		public var backupPixels:BitmapData;
-		public function Darkness(X:Number, Y:Number)
+		
+		public var offsetAngle:Number = 0;
+		public var ROTATION_SPEED:Number = 90;
+		public var OFFSET_MAGNITUDE:Number = .1;
+		public var savedAlpha:Number = 1;
+		
+		public function Darkness(X:Number, Y:Number, Color:uint)
 		{
 			super(X, Y);
 			//loadGraphic(DarknessSprite);
-			makeGraphic(FlxG.width, FlxG.height, 0xff000000);
+			makeGraphic(FlxG.width, FlxG.height, Color);// 0xff000000);// 0xff172C47);//0xff000000);
 			scrollFactor = new FlxPoint(0, 0);
 			
 			backupPixels = this.pixels.clone();
@@ -33,19 +40,23 @@ package
 			
 			if (!PlayState.instance.startedGame)
 			{
-				alpha = 1;
+				savedAlpha = 1;
 			}
 			else
 			{
-				if (alpha > PlayState.instance.depthDarkness)
+				if (savedAlpha > PlayState.instance.depthDarkness)
 				{
-					alpha -= FlxG.elapsed;
+					savedAlpha = Math.max(PlayState.instance.depthDarkness, savedAlpha - FlxG.elapsed);
 				}
-				else if (alpha <= PlayState.instance.depthDarkness)
+				else if (savedAlpha <= PlayState.instance.depthDarkness)
 				{
-					alpha += FlxG.elapsed;
+					savedAlpha = Math.min(PlayState.instance.depthDarkness, savedAlpha + FlxG.elapsed);
 				}
 			}
+			
+			offsetAngle += FlxG.elapsed * ROTATION_SPEED;
+			alpha = savedAlpha + Math.sin(ZMathUtils.toRadians(offsetAngle)) * OFFSET_MAGNITUDE;
+			//trace("alpha: " + alpha + " saved: " + savedAlpha + " angle: " + offsetAngle);
 		}
 		
 		public function reDarken() : void

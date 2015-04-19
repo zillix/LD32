@@ -24,6 +24,7 @@ package
 			//offset.x = width / 2;
 			//==offset.y = width / 2;
 			target = Target;
+			setRadius(Radius);
 			
 		}
 		
@@ -55,7 +56,8 @@ package
 						screenXY.y - (darknessScreenXY.y) - this.height / 2);
 			darkness.stamp(this,
 						stampXY.x, stampXY.y);*/
-						
+			PlayState.instance.blueColor.stamp(this, x - width / 2 - FlxG.camera.scroll.x, y - height / 2 - FlxG.camera.scroll.y);
+					
  			darkness.stamp(this, x - width / 2 - FlxG.camera.scroll.x, y - height / 2 - FlxG.camera.scroll.y);
 		}
 	}

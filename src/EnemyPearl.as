@@ -27,7 +27,9 @@ package
 		{
 			collisionMask = 0;
 			//body.type = BodyType.KINEMATIC;
-			followTarget(PlayState.instance.player, 100, 200);
+			followTarget(PlayState.instance.player, 10, 100);
+			_minFollowDist = 30;
+
 		}
 		
 		override public function update() : void
