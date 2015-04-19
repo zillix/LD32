@@ -16,7 +16,7 @@ package
 	public class TrapDoor extends ColorSprite 
 	{
 		public static const TRAP_DOOR_COLOR:uint = 0xff6D2901;
-		private static const WIDTH:Number = 100;
+		private static const WIDTH:Number = 80;
 		private static const HEIGHT:Number = 20;
 		
 		private var anchor:ZlxNapeSprite;
@@ -27,7 +27,7 @@ package
 			super(X, Y, TRAP_DOOR_COLOR)
 			createBody(WIDTH, HEIGHT, Context);
 			
-			setMaterial(new Material(0, 0, 0, Water.DENSITY - .2));
+			setMaterial(new Material(0, 0, 0, Water.DENSITY + .1));
 			
 			anchor = new ZlxNapeSprite(X, Y);
 			anchor.createBody(2, 2, Context, BodyType.KINEMATIC);

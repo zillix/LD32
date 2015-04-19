@@ -12,19 +12,19 @@ package
 	 * ...
 	 * @author zillix
 	 */
-	public class JellyFish extends EnemyCore 
+	public class SuperJelly extends EnemyCore 
 	{
 		
 		[Embed(source = "data/jellyfishTentacleSegment.png")]	public var SegmentSprite:Class;
-		public static const TENTACLES:int = 4;
-		public static const NODE_COUNT:int = 3;
-		public static const TENTACLE_LENGTH:int = 3;
+		public static const TENTACLES:int = 5;
+		public static const NODE_COUNT:int = 5;
+		public static const TENTACLE_LENGTH:int = 5;
 		
 		private var _chains:Vector.<BodyChain> = new Vector.<BodyChain>();
-		public function JellyFish(X:Number, Y:Number, Context:BodyContext, NodeLayer:FlxGroup, SegmentLayer:FlxGroup)
+		public function SuperJelly(X:Number, Y:Number, Context:BodyContext, NodeLayer:FlxGroup, SegmentLayer:FlxGroup)
 		{
 			super(X, Y, Context, NodeLayer, NODE_COUNT);
-			setMaterial(new Material(0, 0, 0, Water.DENSITY));
+			setMaterial(new Material(0, 0, 0, Water.DENSITY - .1));
 			
 			for (var i:int = 0; i < NODE_COUNT; i++)
 			{
@@ -72,6 +72,17 @@ package
 			
 			chain.addCbType(CallbackTypes.ENEMY);
 			
+		}
+		
+		override protected function setupNodes() : void
+		{
+			_nodeDistance = 30;
+			_nodeCount = 5;
+			_coreRadius = 20;
+			_nodeRadius = 35;
+			_nodeDesnsity = 1.2;
+			super.setupNodes();
+			makeInvincible();
 		}
 		
 		override public function update() : void

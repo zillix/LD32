@@ -13,7 +13,8 @@ package
 		public var textPlayer:TextPlayer = new TextPlayer();
 		
 		
-		[Embed(source="/data/HACHEA__.ttf", fontFamily="HACHEA", embedAsCFF="false")] 	public	var	HACHEA:String;
+		[Embed(source="data/HACHEA__.ttf", fontFamily="HACHEA", embedAsCFF="false")] 	public	var	HACHEA:String;
+		[Embed(source = "data/pixel-love.ttf", fontFamily = "pixel-love", embedAsCFF = "false")] 	public	var	PIXEL_LOVE:String;
 		
 		
 		public function TextUI(offsetY:Number = 100, Height:int = 70)
@@ -24,8 +25,10 @@ package
 			add(background);
 			
 			text = new GameText(0, offsetY + 12, FlxG.width, null, true);
-			text.setFormat("HACHEA", 20, 0xff000000, "center");
-			text.shadow = 0xff888888;
+			text.setFormat("pixel-love", 20, 0xff000000, "center");
+			text.shadow = 0xff222222;
+			//text.fullShadow = 0xff222222
+			text.fullShadowMagnitude = 2;
 			text.scrollFactor = new FlxPoint(0, 0);
 			add(text);
 		}
@@ -43,6 +46,13 @@ package
 			
 			text.text = textPlayer.currentText;
 			text.color = textPlayer.currentColor;
+			
+		}
+		
+		public function setY(Y:Number) : void
+		{
+			text.y = Y + 12;
+			background.y = Y;
 		}
 	}
 	

@@ -87,6 +87,20 @@ package
 			}
 		}
 		
+		public function set alpha(val:Number) : void
+		{
+			for each (var flxObj:FlxSprite in members)
+			{
+				flxObj.alpha = val;
+			}
+		}
+		
+		public function get alpha() : Number
+		{
+			return members[0].alpha;
+		}
+		
+		
 	}
 	
 }

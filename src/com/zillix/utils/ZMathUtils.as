@@ -28,9 +28,9 @@ package com.zillix.utils
 			return a << 24 | r << 16 | g << 8 | b;
 		}
 		
-		public static function getVector(angle:Number, length:Number) : Vec2
+		public static function getVector(degrees:Number, length:Number) : Vec2
 		{
-			var vec:Vec2 = Vec2.fromPolar(length, toRadians(angle));
+			var vec:Vec2 = Vec2.fromPolar(length, toRadians(degrees));
 			return vec;
 		}
 		

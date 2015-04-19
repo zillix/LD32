@@ -14,9 +14,10 @@ package
 		public function Hud()
 		{
 			airBar = new AirBar(200, 10);
+			airBar.alpha = 0;
 			add(airBar);
 			
-			textUI = new TextUI(FlxG.height - 70, 70);
+			textUI = new TextUI(0, 70);
 			add(textUI);
 		}
 		
@@ -24,6 +25,39 @@ package
 		{
 			super.update();
 			airBar.render(PlayState.instance.player.currentAir / PlayState.instance.player.maxAir);
+			
+			if (PlayState.instance.endingGame)
+			{
+				airBar.visible = false;
+			}
+			
+			
+			if (PlayState.instance.activeOrb)
+			{
+				textUI.visible = true;
+				textUI.setY(Math.max(0, 
+					Math.min(
+						FlxG.height - 70, PlayState.instance.activeOrb.y - FlxG.camera.scroll.y)));
+			}
+			else if (PlayState.instance.showEndText)
+			{
+				textUI.visible = true;
+				textUI.setY(FlxG.height / 2 - 35);
+			}
+			else
+			{
+				textUI.visible = false;
+			}
+			
+			if (PlayState.instance.player.currentAir < PlayState.instance.player.maxAir 
+			&& PlayState.instance.player.severed)
+			{
+				airBar.alpha += FlxG.elapsed * 1;
+			}
+			else
+			{
+				airBar.alpha -= FlxG.elapsed * 1;
+			}
 		}
 		
 		public function onPlayerDamage() : void

@@ -118,39 +118,13 @@ package
 		private static const TINY_PLANT:uint = 0xE8FD4D;
 		private static const ONE_WAY_PLATFORM:uint = 0x17620C;
 		private static const SHRINE:uint = 0x994364;
-		/*private static const MECH_SPAWN:uint = 0xC4181A; // 196 24 26
-		private static const MECH_HIDE:uint = 0x2C18C4; // 44 24 196
-		private static const MECH_IDLE:uint = 0x9D2DAF; // 157 45 175
-		private static const MECH_FLY:uint = 0x5EEC81; // 94 236 129
-		private static const PIXEL_CACHE:uint = 0x620C0D; // 98 12 13
-		private static const MECH_IDLE_HIGH:uint = 0xFDD14D;// 253 209 77
-		private static const TEXT_BEACON:uint = 0xF0C1F7;
-		private static const TUTORIAL_SPAWN:uint = 0x02DA37;
-		private static const BODY_PIT:uint = 0x160C62;
-		private static const BLOCKADE:uint = 0x8D4399;
-		private static const TUTORIAL_CLOSE:uint = 0x5EECEB;
-		private static const ARROW_KEYS:uint = 0xEC5E60;
-		private static const SPACE_BAR:uint = 0x9FAF2D;
-		private static const SHIFT:uint = 0xAF5E2D;
-		private static const DOUBLE_JUMP:uint = 0x1F5717;
-		private static const SECRET_BLOCK:uint = 0x4D2142;
-		private static const SECRET_BLOCK2:uint = 0x18C4C3;
-		private static const SECRET_BACK:uint = 0xDA0205;
-		private static const SECRET_BACK2:uint = 0x37214D;
-		private static const SECRET_BACK3:uint = 0x6FC418;
-		private static const PEDESTAL:uint = 0x375717;
-		[Embed(source = "data/pixelCache.png")]	public var PixelCacheSprite:Class;
-		[Embed(source = "data/blockade.png")]	public var BlockadeSprite:Class;
-		[Embed(source = "data/arrowKeys.png")]	public var ArrowKeysSprite:Class;
-		[Embed(source = "data/spaceImage.png")]	public var SpaceBarSprite:Class;
-		[Embed(source = "data/zKey.png")]	public var ZKeySprite:Class;
-		[Embed(source = "data/cKey.png")]	public var CKeySprite:Class;
-		[Embed(source = "data/xKey.png")]	public var XKeySprite:Class;
-		[Embed(source = "data/shiftImage.png")]	public var ShiftSprite:Class;
-		[Embed(source = "data/doubleJump.png")]	public var DoubleJumpSprite:Class;
-		[Embed(source = "data/secretBlockade.png")]	public var SecretBlockadeSprite:Class;
-		[Embed(source = "data/secretBlockade2.png")]	public var SecretBlockadeSprite2:Class;
-		[Embed(source = "data/pedestal.png")]	public var PedestalSprite:Class;*/
+		public static const TOP_RIGHT_ROUND_TERRAIN:uint = 0xAFC418;
+		private static const MESSAGE_ORB:uint = 0x8E70BA;
+		private static const SUPER_JELLY:uint = 0x4DFDBA;
+		private static const BLOCKER_JELLY:uint = 0x70DAB2;
+		private static const JELLY_MIN_X:uint = 0xF1F7C1;
+		private static const DEAD_BODY:uint = 0x1E1757;
+		
 		
 		private static var airStartPoint:FlxPoint = new FlxPoint();
 		
@@ -218,6 +192,29 @@ package
 					
 				case SHRINE:
 					_state.addShrine(X, Y);
+					break;
+					
+				case TOP_RIGHT_ROUND_TERRAIN:
+					_state.addRoundCorner(X, Y, TOP_RIGHT_ROUND_TERRAIN);
+					break;
+					
+				case MESSAGE_ORB:
+					_state.addMessageOrb(X, Y);
+					break;
+					
+				case SUPER_JELLY:
+					_state.addSuperJelly(X, Y);
+					break;
+					
+				case BLOCKER_JELLY:
+					_state.addBlockerJellyPoint(X, Y);
+					break;
+				case JELLY_MIN_X:
+					_state.jellyMinX = X;
+					break;
+					
+				case DEAD_BODY:
+					_state.addDeadBody(X, Y);
 					break;
 			}
 			

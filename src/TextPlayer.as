@@ -65,6 +65,7 @@ package
 				_currentDuration = next.duration;
 				_currentCallback = next.callback;
 				_currentColor = next.color;
+				trace(_currentText);
 				
 			}
 			else
@@ -95,7 +96,6 @@ package
 		{
 			return textQueue.length > 0 || _currentDuration > 0;
 		}
-		
 	}
 	
 }

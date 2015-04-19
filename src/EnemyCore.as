@@ -17,19 +17,21 @@ package
 	{
 		
 		
-		private var _nodeCount:int = 4;
-		private var _nodeRadius:int = 10;
+		protected var _nodeCount:int = 4;
+		protected var _nodeRadius:int = 10;
 		
-		private var _coreRadius:int = 7;
+		protected var _coreRadius:int = 7;
 		
 		
-		private var _nodeDistance:int = 15;
+		protected var _nodeDistance:int = 15;
+		
+		protected var _nodeDesnsity:Number = 0;
 		
 		protected var _nodes:Vector.<EnemyNode> = new Vector.<EnemyNode>();
 		private var _nodeLayer:FlxGroup;
 		private var _joints:Vector.<DistanceJoint>;
 		
-		public static const JOINT_BREAK_FORCE:Number = 120;
+		public static const JOINT_BREAK_FORCE:Number = 135;
 		public static const JOINT_BREAK_FORCE_WEAK:Number = 80;
 		public static const JOINT_BREAK_DIST:Number = 40;
 		
@@ -42,7 +44,7 @@ package
 		private var _leashStartDist:int = 20;
 		private var _leashEndDist:int = 5;
 		private var _leashing:Boolean = false;
-		private var _impulseAccel:Number = 5;
+		private var _impulseAccel:Number = 4;
 		
 		private var _glow:Glow;
 		
@@ -50,6 +52,8 @@ package
 		public function EnemyCore(X:Number, Y:Number, Context:BodyContext, NodeLayer:FlxGroup, NodeCount:int)
 		{
 			super(X, Y, Context, _coreRadius);
+			
+			init();
 			
 			_nodeCount = NodeCount;
 			
@@ -62,12 +66,19 @@ package
 			
 			addCbType(CallbackTypes.ENEMY);
 			
+			setupNodes();
+			
+			_glow = PlayState.instance.attachGlow(this, 50);
+		}
+		
+		protected function setupNodes() : void
+		{
 			for (var i:int = 0; i < _nodeCount; i++)
 			{
-				var angle:Number = 360 / _nodeCount * i;
+				var angle:Number = 90 + 360 / _nodeCount * i;
 				var offsetX:Number = Math.cos(ZMathUtils.toRadians(angle)) * _nodeDistance;
 				var offsetY:Number = Math.sin(ZMathUtils.toRadians(angle)) * _nodeDistance;
-				var node:EnemyNode = new EnemyNode(x + offsetX, y + offsetY, Context, _nodeRadius); 
+				var node:EnemyNode = new EnemyNode(x + offsetX, y + offsetY, _bodyContext, _nodeRadius, null, _nodeDesnsity); 
 				_nodes.push(node);
 				//node.fluidMask = 0;
 				_nodeLayer.add(node);
@@ -81,7 +92,7 @@ package
 					0,
 					5);
 					
-				distanceJoint.space = Context.space;
+				distanceJoint.space = _bodyContext.space;
 				
 				if (_breakable)
 				{
@@ -93,8 +104,6 @@ package
 				}
 				_joints.push(distanceJoint);
 			}
-			
-			_glow = PlayState.instance.attachGlow(this, 50);
 		}
 		
 		override public function update() : void
@@ -190,6 +199,7 @@ package
 		
 			kill();
 			ejectPearl();
+			PlayState.instance.onJellyKilled();
 		}
 		
 		protected function ejectPearl() : void
@@ -197,6 +207,20 @@ package
 			var pearl:EnemyPearl = new EnemyPearl(x, y, PlayState.instance.bodyContext, radius, PlayState.instance.getTube());
 			_glow.target = pearl;
 			_nodeLayer.add(pearl);
+		}
+		
+		
+		
+		public function makeInvincible() : void
+		{
+			for each (var joint:DistanceJoint in _joints)
+			{
+				if (joint != null)
+				{
+					joint.breakUnderError = false;
+					joint.breakUnderForce = false;
+				}
+			}
 		}
 	}
 	

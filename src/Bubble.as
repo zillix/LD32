@@ -55,10 +55,12 @@ package
 			
 			visible = false;
 			
-			//_canRotate = false;
+			_canRotate = false;
 			
-		//	_glow = PlayState.instance.attachGlow(this, GLOW_RADIUS_BUFFER);
-	//		_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
+			/*_glow = PlayState.instance.attachGlow(this, GLOW_RADIUS_BUFFER);
+			_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
+			_glow.alpha = .5;
+			*/
 		}
 		
 		override public function update() : void
@@ -117,6 +119,15 @@ package
 				
 				_deathTime = getTimer();
 			}
+		}
+		
+		public function isShrinking() : Boolean
+		{
+			if (_popped)
+			{return true;
+			}
+			
+			return getTimer() > _deathTime;
 		}
 	}
 	

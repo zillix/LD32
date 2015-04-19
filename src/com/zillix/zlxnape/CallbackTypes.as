@@ -16,6 +16,10 @@ package com.zillix.zlxnape
 		public static var BUBBLE:CbType = new CbType();
 		public static var AIR:CbType = new CbType();
 		public static var SHRINE:CbType = new CbType();
+		public static var MESSAGE:CbType = new CbType();
+		public static var TREASURE:CbType = new CbType();
+		public static var ROCK:CbType = new CbType();
+		public static var DEADBODY:CbType = new CbType();
 	}
 	
 }

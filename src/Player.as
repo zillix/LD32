@@ -15,9 +15,9 @@ package
 	 */
 	public class Player extends ColorSprite
 	{
-		public var EXHAUSTED_ACCELERATION:int = 5500;
+		public var EXHAUSTED_ACCELERATION:int = 3500;
 		
-		public var ACCELERATION:int = 500; // 5500;
+		public var ACCELERATION:int = 5500; // 5500;
 		public var MAX_SPEED:int = 20;
 		private const normalFriction:Material = new Material( -.5, 1, 0.38, 0.875, 0.005);
 		
@@ -26,17 +26,18 @@ package
 		public var maxAir:Number = 60;
 		public var currentAir:Number = 60;
 		public static const NORMAL_AIR_DRAIN:Number = 1;
-		public static const MOVING_AIR_DRAIN:Number = 10;
-		public static const BUBBLING_AIR_DRAIN:Number = 15;
+		public static const MOVING_AIR_DRAIN:Number = 3;
+		public static const BUBBLING_AIR_DRAIN:Number = 5;
 		
 		public static const DAMAGE_AIR:Number = 30;
 		
-		public static const AIR_TUBE_REGAIN:Number = 12;
+		public static const AIR_TUBE_REGAIN:Number = 1000;
 		public static const AIR_ZONE_REGAIN:Number = 60;
 		
 		private var _lastDamageTime:int = 0;
 		
 		private var _severed:Boolean = false;
+		public function get severed() : Boolean { return _severed; }
 		
 		public static const DAMAGE_COOLDOWN:Number = 1;
 		
@@ -45,10 +46,12 @@ package
 		private var _exhausted:Boolean = false;
 		private var _touchingAir:Boolean = false;
 		
+		public var bouyant:Boolean = false;
+		
 		public function Player(X:Number, Y:Number, Context:BodyContext)
 		{
 			super(X, Y, 0xffff0000);
-			createBody(10, 10, Context);
+			createBody(15, 15, Context);
 			this.body.setShapeMaterials(normalFriction);
 			maxVelocity.x = MAX_SPEED;
 			maxVelocity.y = MAX_SPEED;
@@ -59,36 +62,47 @@ package
 			PlayState.instance.attachGlow(this, 200);
 		}
 		
+		public function get canMove() : Boolean
+		{
+			return PlayState.instance.viewedOneOrb && !PlayState.instance.endingGame;
+		}
+		
 		override public function update() : void
 		{
 			super.update();
 			
+			
 			var keyPressed:Boolean = false;
-			if (FlxG.keys.pressed("RIGHT"))
+			if (canMove)
 			{
-				_body.applyImpulse(Vec2.get(ACCELERATION * FlxG.elapsed));
-				keyPressed = true;
-				facing = RIGHT;
-			}
-			else if (FlxG.keys.pressed("LEFT"))
-			{
-				_body.applyImpulse(Vec2.get(-ACCELERATION * FlxG.elapsed));
-				facing = LEFT;
-				keyPressed = true;
+				if (FlxG.keys.pressed("RIGHT"))
+				{
+					_body.applyImpulse(Vec2.get(ACCELERATION * FlxG.elapsed));
+					keyPressed = true;
+					facing = RIGHT;
+				}
+				else if (FlxG.keys.pressed("LEFT"))
+				{
+					_body.applyImpulse(Vec2.get(-ACCELERATION * FlxG.elapsed));
+					facing = LEFT;
+					keyPressed = true;
+				}
 			}
 			if (!_exhausted)
 			{
-				
-				if (FlxG.keys.pressed("UP"))
+				if (canMove)
 				{
-					_body.applyImpulse(Vec2.get(0, -ACCELERATION * FlxG.elapsed));
-					keyPressed = true;
-				}
-				else if (FlxG.keys.pressed("DOWN"))
-				{
-					_body.applyImpulse(Vec2.get(0, ACCELERATION * FlxG.elapsed));
-					facing = LEFT;
-					keyPressed = true;
+					if (FlxG.keys.pressed("UP"))
+					{
+						_body.applyImpulse(Vec2.get(0, -ACCELERATION * FlxG.elapsed));
+						keyPressed = true;
+					}
+					else if (FlxG.keys.pressed("DOWN"))
+					{
+						_body.applyImpulse(Vec2.get(0, ACCELERATION * FlxG.elapsed));
+						facing = LEFT;
+						keyPressed = true;
+					}
 				}
 				
 				if (FlxG.keys.justPressed("SPACE"))
@@ -96,12 +110,10 @@ package
 					_bubbleEmitter.startEmit();
 				}
 			}
-			else if (_severed)
+			
+			if (bouyant)
 			{
-				if (!_touchingAir)
-				{
-					_body.applyImpulse(Vec2.get(0, -EXHAUSTED_ACCELERATION * FlxG.elapsed));
-				}
+				_body.applyImpulse(Vec2.get(0, -EXHAUSTED_ACCELERATION * FlxG.elapsed));
 			}
 			
 			
@@ -141,12 +153,12 @@ package
 			
 			modifyAir( -airDrain * FlxG.elapsed);
 			
-			if (_exhausted && currentAir == maxAir)
+			/*if (_exhausted && currentAir == maxAir)
 			{
 				_exhausted = false;
 				
 				PlayState.instance.hud.setPlayerExhausted(false);
-			}
+			}*/
 		}
 		
 		private function modifyAir(amt:Number) : void
@@ -155,7 +167,7 @@ package
 			currentAir = Math.min(maxAir, Math.max(0, currentAir + amt));
 			if (currentAir <= 0)
 			{
-				becomeExhausted();
+				becomeExhausted(true);
 			}
 			
 		}
@@ -180,24 +192,44 @@ package
 			{
 				_lastDamageTime = getTimer();
 				
-				modifyAir( -DAMAGE_AIR);
+				//modifyAir( -DAMAGE_AIR);
 				body.applyImpulse(body.velocity.normalise().mul( -DAMAGE_IMPULSE));
 				flicker();
+				FlxG.flash(0x88ff0000, .5);
 			}
 			
 			
 		}
 		
-		public function becomeExhausted() : void
+		public function becomeExhausted(death:Boolean = false ) : void
 		{
+			if (_exhausted)
+			{
+				return;
+			}
 			_exhausted = true;
 			currentAir = 0;
 			PlayState.instance.hud.setPlayerExhausted(true);
+			if (death)
+			{
+				PlayState.instance.endGame(PlayState.END_DEATH);
+			}
+		}
+		
+		public function becomeBuoyant(): void
+		{
+			bouyant = true;
+			_exhausted = true;
 		}
 		
 		public function onTouchAir(bool:Boolean) : void
 		{
 			_touchingAir = bool;
+		}
+		
+		public function onTreasurePickedUp() : void
+		{
+			becomeBuoyant();
 		}
 		
 	}

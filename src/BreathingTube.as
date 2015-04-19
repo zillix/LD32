@@ -25,7 +25,7 @@ package
 		private static const SEGMENT_WIDTH:int = 8;
 		private static const SEGMENT_HEIGHT:int = 16;
 		private static const MAX_SEGMENTS:int = 100;
-		private static const STARTING_SEGMENTS:int = 8;
+		private static const STARTING_SEGMENTS:int = 15;
 		private static const SEGMENT_COLOR:uint = 0xffdddddd;
 		
 		private var _desiredChainLength:int = STARTING_SEGMENTS;
@@ -44,6 +44,10 @@ package
 		
 		private var _tubeRenderer:BlurRenderer;
 		
+		private var _initialSegmentMass:Number = 0;
+		private static const LOWER_SEGMENT_MASS_MATERIAL:Material = new Material(0, 0, 0, 2);
+		private static const LOWER_SEGMENT_MASS_FRAC:Number = .5;
+		private static const NORMAL_SEGMENT_MASS_MATERIAL:Material = new Material(0, 0, 0, 6);
 		
 		
 		private static const SUB_COLOR:uint = 0xffffff00;
@@ -56,7 +60,7 @@ package
 			_player = player;
 			
 			_chain = new BodyChain(this,
-				getEdgeVector(DIRECTION_FORWARD), 
+				getEdgeVector(DIRECTION_RIGHT), 
 				_tubeLayer,
 				Context,
 				MAX_SEGMENTS,
@@ -69,8 +73,9 @@ package
 			_chain.segmentSpriteClass = SegmentSprite;
 			_chain.fluidMask = ~InteractionGroups.NO_COLLIDE;
 				
-			_chain.segmentMaterial = new Material(0, 0, 0, 3.2);
+			_chain.segmentMaterial = NORMAL_SEGMENT_MASS_MATERIAL;
 			_chain.segmentCollisionMask = InteractionGroups.TERRAIN;
+			_chain.segmentSpriteRotations = 64;
 			
 			collisionGroup = InteractionGroups.TERRAIN;
 			collisionMask = ~(InteractionGroups.NO_COLLIDE | InteractionGroups.SEGMENT | InteractionGroups.PLAYER);
@@ -86,8 +91,8 @@ package
 			//initSegments(_player);
 			
 			var lastSegment:ZlxNapeSprite = _chain.segments[_chain.segments.length - 1];
-			 _playerJoint = new PivotJoint(lastSegment.body, _player.body, 
-				Vec2.get(), Vec2.get());// , 1, 2);
+			 _playerJoint = new DistanceJoint(lastSegment.body, _player.body, 
+				Vec2.get(), Vec2.get(), 1, 2);// , 1, 2);
 			
 			_playerJoint.space = _body.space;
 			_playerJoint.maxForce = 1000000;
@@ -95,6 +100,14 @@ package
 			
 			//_tubeRenderer = new ChainRenderer(FlxG.width, FlxG.height, _chain.getArray(), SEGMENT_WIDTH, SEGMENT_HEIGHT, 0xff0000);
 			//PlayState.instance.tubeLayer.add(_tubeRenderer);
+			
+			for each (var segment:ZlxNapeSprite in _chain.segments)
+			{
+				_initialSegmentMass = segment.body.mass;
+				break;
+			}
+			
+			
 		
 		}
 		
@@ -113,6 +126,19 @@ package
 				{
 					_nextChainSpawnTime = getTimer() + CHAIN_SPAWN_FREQ * 1000;
 					_chain.extendSegment();
+				}
+			}
+			for each (var segment:ZlxNapeSprite in _chain.segments)
+			{
+				if (segment.y > PlayState.instance.player.y + 15)
+				{
+					segment.body.mass = _initialSegmentMass * LOWER_SEGMENT_MASS_FRAC;
+					segment.setMaterial(LOWER_SEGMENT_MASS_MATERIAL);
+				}
+				else
+				{
+					segment.body.mass = _initialSegmentMass;
+					segment.setMaterial(NORMAL_SEGMENT_MASS_MATERIAL);
 				}
 			}
 		}
