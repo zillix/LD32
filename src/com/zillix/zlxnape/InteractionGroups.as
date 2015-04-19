@@ -17,6 +17,8 @@ package com.zillix.zlxnape
 		public static var PLAYER_ATTACK:int = 1 << 7;
 		public static var ENEMY_NODE:int = 1 << 8;
 		public static var BUBBLE:int = 1 << 9;
+		
+		public static var ROCK:int = 1 << 10;
 	}
 	
 }

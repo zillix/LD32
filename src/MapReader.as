@@ -53,6 +53,7 @@ package
 			terrain.addCbType(CallbackTypes.GROUND);
 			terrain.collisionMask = ~InteractionGroups.NO_COLLIDE;
 			terrain.collisionGroup = InteractionGroups.TERRAIN;
+			body.type = BodyType.STATIC;
 			
 			_state.terrainLayer.add(terrain);
 			
@@ -114,6 +115,8 @@ package
 		private static const AIR_ZONE_START:uint = 0xE54DFD;
 		private static const TRAP_DOOR:uint = 0xA6FD4D;;
 		private static const SMALL_ROCK:uint = 0x028BDA;
+		private static const TINY_PLANT:uint = 0xE8FD4D;
+		private static const ONE_WAY_PLATFORM:uint = 0x17620C;
 		/*private static const MECH_SPAWN:uint = 0xC4181A; // 196 24 26
 		private static const MECH_HIDE:uint = 0x2C18C4; // 44 24 196
 		private static const MECH_IDLE:uint = 0x9D2DAF; // 157 45 175
@@ -172,6 +175,10 @@ package
 					_state.addPlant(X, Y, Plant.FALL_PLANT);
 					break;
 					
+				case TINY_PLANT:
+					_state.addPlant(X, Y, Plant.TINY_PLANT);
+					break;
+					
 				case DRAPE_PLANT_ANCHOR:
 					_state.addPlant(X, Y, Plant.DRAPE_PLANT);
 					break;
@@ -202,6 +209,10 @@ package
 					
 				case TRAP_DOOR:
 					_state.addTrapDoor(X, Y);
+					break;
+					
+				case ONE_WAY_PLATFORM:
+					_state.addOneWayPlatform(X, Y);
 					break;
 			}
 			

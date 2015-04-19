@@ -55,6 +55,7 @@ package
 		public var segmentSpriteScale:FlxPoint = new FlxPoint(2, 2);
 		
 		public var segmentSpriteRotations:int = 32;
+		public var segmentDrag:FlxPoint = new FlxPoint(15, 15);
 		
 		
 		private static var DEFAULT_COLLOSION_MASK:uint = ~(InteractionGroups.SEGMENT | InteractionGroups .NO_COLLIDE);
@@ -125,13 +126,14 @@ package
 			_offsetVector.y + _anchor.y,
 			_segmentColor);
 			
-			segment.drag = new FlxPoint(15, 15);
+			segment.drag = segmentDrag;
 			
 			segment.createBody(_segmentWidth, _segmentHeight, _bodyContext);
 			segment.setMaterial(segmentMaterial);
 			segment.collisionGroup = InteractionGroups.SEGMENT;
 			segment.collisionMask = segmentCollisionMask;
 			segment.fluidMask = fluidMask;
+			segment.sleeps = true;
 			
 			if (segmentSpriteClass)
 			{
@@ -249,6 +251,10 @@ package
 			{
 				segment.addCbType(type);
 			}
+		}
+		public function get currentSegmentCount() : int
+		{
+			return segments.length - _segmentIndex;
 		}
 	}
 	

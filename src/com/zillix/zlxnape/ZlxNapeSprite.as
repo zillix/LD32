@@ -14,6 +14,7 @@ package com.zillix.zlxnape
 	import nape.space.Space;
 	import nape.phys.BodyType;
 	import nape.phys.Material;
+	import nape.hacks.ForcedSleep;
 	
 	import com.zillix.utils.ZMathUtils;
 	
@@ -38,7 +39,7 @@ package com.zillix.zlxnape
 		
 		protected var _bodyRegistry:BodyRegistry;
 		protected var _bodyContext:BodyContext;
-		protected var _sleeps:Boolean = true;
+		public var sleeps:Boolean = false;
 		
 		protected var _defaultScale:Number = 1;
 		
@@ -168,15 +169,19 @@ package com.zillix.zlxnape
 				return;
 			}
 			
-			if (_sleeps)
+			if (sleeps)
 			{
 				if (onScreen() &&_body.space == null)
 				{
-					_body.space = _bodyContext.space;
+					//_body.space = _bodyContext.space;
 				}
-				else if (!onScreen() && _body.space)
+				else if (!onScreen() && !_body.isSleeping)
 				{
-					_body.space == null;
+					/*if (_body && _body.space)
+					{
+						ForcedSleep.sleepBody(_body);
+					}*/
+					//_body.space = null;
 				}
 				
 				if (!_body.space)
@@ -291,6 +296,11 @@ package com.zillix.zlxnape
 			{
 				Shape(_body.shapes.at(i)).filter.collisionGroup = group;
 			}
+		}
+		
+		public function get collisionGroup() : uint
+		{
+			return _collisionGroup;
 		}
 		
 		public function set collisionMask(mask:uint) : void

@@ -36,6 +36,7 @@
       <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
     <library-path append="true">
+      <path-element>C:\Users\Alex\Documents\flixel\LD32\nape-hacks.swc</path-element>
       <path-element>C:\Users\Alex\Documents\flixel\LD32\nape-dev.swc</path-element>
     </library-path>
   </compiler>

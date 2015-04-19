@@ -57,8 +57,8 @@ package
 			
 			//_canRotate = false;
 			
-			_glow = PlayState.instance.attachGlow(this, GLOW_RADIUS_BUFFER);
-			_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
+		//	_glow = PlayState.instance.attachGlow(this, GLOW_RADIUS_BUFFER);
+	//		_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
 		}
 		
 		override public function update() : void
@@ -73,12 +73,18 @@ package
 				if (time > killTime)
 				{
 					this.kill();
-					_glow.kill();
+					if (_glow != null)
+					{
+						_glow.kill();
+					}
 					return;
 				}
 				
 				setRadius((1 - (time - _deathTime) / (SHRINK_LIFESPAN * 1000)) * initialRadius);
-				_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
+				if (_glow != null)
+				{
+					_glow.setRadius(radius / initialRadius * GLOW_RADIUS_BUFFER);
+				}
 			}
 		}
 		
@@ -100,6 +106,8 @@ package
 				}
 			}
 		}
+		
+		
 		
 		public function onTouchAir() : void
 		{

@@ -50,6 +50,7 @@
   </includeLibraries>
   <!-- SWC Libraries -->
   <libraryPaths>
+    <element path="nape-hacks.swc" />
     <element path="nape-dev.swc" />
   </libraryPaths>
   <!-- External Libraries -->

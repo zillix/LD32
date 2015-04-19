@@ -12,6 +12,7 @@ package
 	import nape.phys.Material;
 	import org.flixel.FlxGroup;
 	import nape.phys.BodyType;
+	import flash.utils.getTimer;
 	import org.flixel.*;
 	/**
 	 * ...
@@ -26,6 +27,10 @@ package
 		private static const MAX_SEGMENTS:int = 100;
 		private static const STARTING_SEGMENTS:int = 15;
 		private static const SEGMENT_COLOR:uint = 0xffdddddd;
+		
+		private var _desiredChainLength:int = STARTING_SEGMENTS;
+		private var _nextChainSpawnTime:int = 0;
+		private static const CHAIN_SPAWN_FREQ:Number = .5;
 			
 		
 		private var _tubeLayer:FlxGroup;
@@ -68,7 +73,7 @@ package
 			_chain.segmentCollisionMask = InteractionGroups.TERRAIN;
 			
 			collisionGroup = InteractionGroups.TERRAIN;
-			collisionMask = ~(InteractionGroups.NO_COLLIDE | InteractionGroups.SEGMENT);
+			collisionMask = ~(InteractionGroups.NO_COLLIDE | InteractionGroups.SEGMENT | InteractionGroups.PLAYER);
 		}
 		
 		public function init() : void
@@ -101,6 +106,15 @@ package
 			{
 				_bubbleEmitter.update();
 			}
+			
+			if (_desiredChainLength > _chain.currentSegmentCount)
+			{
+				if (getTimer() > _nextChainSpawnTime)
+				{
+					_nextChainSpawnTime = getTimer() + CHAIN_SPAWN_FREQ * 1000;
+					_chain.extendSegment();
+				}
+			}
 		}
 		
 		public function sever() : void
@@ -112,10 +126,7 @@ package
 		
 		public function extend(amt:int) : void
 		{
-			for (var i:int = 0; i < amt; ++i)
-			{
-				_chain.extendSegment();
-			}
+			_desiredChainLength = _desiredChainLength + amt;
 		}
 	}
 	

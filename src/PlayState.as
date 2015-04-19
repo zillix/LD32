@@ -103,12 +103,13 @@ package
 		override public function create():void
 		{
 			instance = this;
-			FlxG.bgColor = 0xffdddddd;
+			FlxG.bgColor = 0xffA3948B;
 			
 			
 			bubbleRenderer = new FluidRenderer(FlxG.width, FlxG.height, bubbleLayer.members);
 			add(bubbleRenderer);
 			//fluidRenderer.alpha = .5;
+			add(airZoneLayer);
 			
 			add(glowLayer);
 			add(terrainLayer);
@@ -121,7 +122,6 @@ package
 			add(enemyLayer);
 			
 			
-			add(airZoneLayer);
 			add(darkLayer);
 			
 			add(hudLayer);
@@ -280,6 +280,9 @@ package
 				space.step(FRAME_RATE, 5, 3);
 			}
 			
+			
+			//		trace(space.bodies.length);
+			
 			super.update();	
 			
 			depthDarkness = FlxG.camera.scroll.y / maxDarknessY;
@@ -362,15 +365,19 @@ package
 			switch (plantType)
 			{
 				case Plant.FALL_PLANT:
-					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 3 + 2, Math.random() * 3 + 2, plantType, 1, 4);
+					plant = new Plant(X, Y, plantLayer, bodyContext, 2, Math.random() * 3 + 2, plantType, 4, 6);
 					break;
 					
 				case Plant.RISE_PLANT:
-					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 3 + 2, Math.random() * 3 + 2, plantType, 1, 4);
+					plant = new Plant(X, Y, plantLayer, bodyContext, 2, Math.random() * 3 + 2, plantType, 4, 6);
 					break;
 					
 				case Plant.DRAPE_PLANT:
-					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 4 + 2, Math.random() * 2 + 5, plantType, 1, 4);
+					plant = new Plant(X, Y, plantLayer, bodyContext, Math.random() * 4 + 2, Math.random() * 2 + 5, plantType, 4, 6);
+					break;
+					
+				case Plant.TINY_PLANT:
+					plant = new Plant(X, Y, plantLayer, bodyContext, 2, 1, plantType, 4, 6);
 					break;
 			}
 					
@@ -383,6 +390,7 @@ package
 			const ROCK_COLOR:uint = 0xff571730;
 			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
 			rock.createBody(100, 40, bodyContext);
+			rock.collisionGroup = rock.collisionGroup | InteractionGroups.ROCK;
 			rock.setMaterial(new Material(1, 1, 1, Water.DENSITY + .3, .001));
 			rockLayer.add(rock);
 			
@@ -393,6 +401,7 @@ package
 			const ROCK_COLOR:uint = 0xff571730;
 			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
 			rock.createBody(20, 20, bodyContext);
+			rock.collisionGroup = rock.collisionGroup | InteractionGroups.ROCK;
 			rock.setMaterial(new Material(1, 2, 2, Water.DENSITY + .3, .001));
 			rockLayer.add(rock);
 			
@@ -465,6 +474,17 @@ package
 		{
 			var trapDoor:TrapDoor = new TrapDoor(X, Y, bodyContext, rockLayer);
 			rockLayer.add(trapDoor);
+		}
+		
+		public function addOneWayPlatform(X:Number, Y:Number) : void
+		{
+			const ROCK_COLOR:uint = 0xff571730;
+			var plat:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
+			plat.createBody(20, 4, bodyContext);
+			plat.setMaterial(new Material(1, 2, 2, Water.DENSITY + 4, .001));
+			plat.collisionGroup = InteractionGroups.ROCK;
+			plat.body.type = BodyType.STATIC;
+			rockLayer.add(plat);
 		}
 	}
 }

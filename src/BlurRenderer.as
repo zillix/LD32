@@ -117,7 +117,7 @@ package
 						
 						transMatrix.tx = xPos;
 						transMatrix.ty = yPos;
-						drawCanvasData.draw(sourceSprite, transMatrix);
+ 						drawCanvasData.draw(sourceSprite, transMatrix);
 						transMatrix.rotate(-ZMathUtils.toRadians(member.angle));
 						transMatrix.scale(1 / scale, 1 / scale);
 					}
@@ -144,7 +144,7 @@ package
 				//trace("Blur : " + (getTimer() - time));
 				//time = getTimer();
 				drawCanvasDataCopy.fillRect(updateRect, 0x00000000);
-				drawCanvasDataCopy.threshold(drawCanvasData,updateRect, destPoint, ">", 0XFF2d2d2d, 0xFF000000 | thresholdColor, 0xFFFFFFFF, false);
+				drawCanvasDataCopy.threshold(drawCanvasData,updateRect, destPoint, ">", 0XFF2d2d2d, thresholdColor, 0xFFFFFFFF, false);
 				
 				lastMaxPoint.x = maxPoint.x;
 				lastMaxPoint.y = maxPoint.y;

@@ -44,6 +44,7 @@ package
 					
 				chain.segmentCollisionMask = ~(InteractionGroups.NO_COLLIDE | InteractionGroups.ENEMY | InteractionGroups.ENEMY_NODE | InteractionGroups.SEGMENT);
 				chain.fluidMask = 0;
+				chain.segmentDrag = new FlxPoint(30, 30);
 				chain.segmentMaterial = new Material(0, 4, 4, .01);
 				_chains.push(chain);
 				

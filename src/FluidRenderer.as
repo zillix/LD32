@@ -29,7 +29,7 @@ package
 			circleSprite.graphics.beginFill(0xFF0000);
 			circleSprite.graphics.drawCircle(0, 0, CIRCLE_RADIUS);
 			circleSprite.graphics.endFill();
-			super(ScreenWidth, ScreenHeight, Group, circleSprite); 
+			super(ScreenWidth, ScreenHeight, Group, circleSprite, AirZone.AIR_COLOR); 
 			blurFilter = new BlurFilter(12, 12, 2);
 		
 		}

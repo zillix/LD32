@@ -1,6 +1,7 @@
 package 
 {
 	import com.zillix.zlxnape.ZlxNapeSprite;
+	import com.zillix.utils.ZMathUtils;
 	import flash.utils.getTimer;
 	/**
 	 * ...
@@ -13,8 +14,10 @@ package
 		private var _emitting:Boolean = false;
 		private var EMIT_COOLDOWN:Number = .2;
 		private var _nextEmitTime:Number = 0;
-		private var _bubbleRadius:Number = 5;
+		private var _minBubbleRadius:Number = 4;
+		private var _maxBubbleRadius:Number = 8;
 		private var _frequency:Number = 0;
+		
 		public function BubbleEmitter(owner:ZlxNapeSprite, state:PlayState, frequency:Number = 0 )
 		{
 			if (frequency == 0)
@@ -49,7 +52,8 @@ package
 		
 		private function createBubble() : void
 		{
-			var bubble:Bubble = new Bubble(_owner.x, _owner.y, _bubbleRadius, _state.bodyContext);
+			var radius:Number = ZMathUtils.randomBetween(_minBubbleRadius, _maxBubbleRadius);
+			var bubble:Bubble = new Bubble(_owner.x, _owner.y, radius, _state.bodyContext);
 			_state.bubbleLayer.add(bubble);
 			_nextEmitTime = getTimer() + _frequency * 1000;
 		}

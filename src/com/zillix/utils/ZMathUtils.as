@@ -33,6 +33,11 @@ package com.zillix.utils
 			var vec:Vec2 = Vec2.fromPolar(length, toRadians(angle));
 			return vec;
 		}
+		
+		public static function randomBetween(low:Number, high:Number) : Number
+		{
+			return Math.random() * (high - low) + low;
+		}
 	}
 	
 }
