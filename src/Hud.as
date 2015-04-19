@@ -13,7 +13,7 @@ package
 		public var textUI:TextUI;
 		public function Hud()
 		{
-			airBar = new AirBar(200, 10);
+			airBar = new AirBar(FlxG.width / 2 - 100, FlxG.height / 2 - 20);
 			airBar.alpha = 0;
 			add(airBar);
 			
@@ -49,7 +49,7 @@ package
 				textUI.visible = false;
 			}
 			
-			if (PlayState.instance.player.currentAir < PlayState.instance.player.maxAir 
+			/*if (PlayState.instance.player.currentAir < PlayState.instance.player.maxAir 
 			&& PlayState.instance.player.severed)
 			{
 				airBar.alpha += FlxG.elapsed * 1;
@@ -57,6 +57,18 @@ package
 			else
 			{
 				airBar.alpha -= FlxG.elapsed * 1;
+			}*/
+			if (PlayState.instance.player.severed)
+			{
+				airBar.alpha = .5;
+			}
+			if (PlayState.instance.player.currentAir < PlayState.instance.player.maxAir / 2)
+			{
+				airBar.setExhausted(true);
+			}
+			else
+			{
+				airBar.setExhausted(false);
 			}
 		}
 		

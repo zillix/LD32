@@ -7,7 +7,7 @@ package
 	 */
 	public class PlayText 
 	{
-		public static const DEFAULT_DURATION:Number = 3;
+		public static const DEFAULT_DURATION:Number = 3.5;
 		public static const DEFAULT_TEXT_COLOR:uint = 0xffffff;
 		public var text:String;
 		public var duration:Number;

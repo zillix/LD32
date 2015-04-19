@@ -17,6 +17,8 @@ package
 	public class Player extends ZlxNapeSprite
 	{
 		[Embed(source = "data/player.png")]	public var PlayerSprite:Class;
+		[Embed(source = "data/bubble.mp3")]	public var BubbleSound:Class;
+		[Embed(source = "data/sever.mp3")]	public var SeverSound:Class;
 		
 		public var EXHAUSTED_ACCELERATION:int = 3500;
 		
@@ -52,6 +54,9 @@ package
 		public var bouyant:Boolean = false;
 		
 		public var ROTATE_SPEED:Number = 360;
+		
+		public var nextBubbleSoundTime:int = 0;
+		public var BUBBLE_SOUND_DELAY:Number = .15;
 		
 		public function Player(X:Number, Y:Number, Context:BodyContext)
 		{
@@ -125,7 +130,17 @@ package
 				{
 					_bubbleEmitter.startEmit();
 				}
-			}
+				
+				
+				if (FlxG.keys.pressed("SPACE"))
+				{
+					if (getTimer() > nextBubbleSoundTime)
+					{
+						FlxG.play(BubbleSound, PlayState.SFX_VOLUME * .15);
+						nextBubbleSoundTime = getTimer() + BUBBLE_SOUND_DELAY * 1000;
+					}
+				}
+			} 
 			
 			if (keyPressed)
 			{
@@ -135,6 +150,7 @@ package
 			{
 				play("float");
 			}
+			
 			
 			
 			
@@ -207,6 +223,7 @@ package
 				sever();
 				PlayState.instance.severTube();
 				PlayState.instance.rKey.visible = false;
+				FlxG.play(SeverSound, PlayState.SFX_VOLUME);
 			}
 			
 			_bubbleEmitter.update();

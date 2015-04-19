@@ -8,6 +8,7 @@ package
 	import com.zillix.zlxnape.CallbackTypes;
 	import com.zillix.utils.ZMathUtils;
 	import nape.geom.Vec2;
+	import org.flixel.*;
 	/**
 	 * ...
 	 * @author zillix
@@ -15,6 +16,7 @@ package
 	public class MessageOrb extends ZlxNapeSprite 
 	{
 		[Embed(source = "data/messageOrb.png")]	public var OrbSprite:Class;
+		[Embed(source = "data/messageOrb.mp3")]	public var PlaySound:Class;
 		
 		private var _index:int;
 		
@@ -67,6 +69,7 @@ package
 			{
 				displayMessage();
 				_bubbleCount = 0;
+				FlxG.play(PlaySound, PlayState.SFX_VOLUME * .3);
 			}
 		}
 		

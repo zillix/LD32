@@ -12,6 +12,7 @@ package
 	import com.zillix.zlxnape.demos.ZlxNapeDemo;
 	import com.zillix.zlxnape.ZlxNapeSprite;
 	import flash.text.engine.BreakOpportunity;
+	import flash.ui.ContextMenuClipboardItems;
 	import nape.callbacks.PreCallback;
 	import nape.callbacks.PreFlag;
 	import nape.callbacks.PreListener;
@@ -54,6 +55,16 @@ package
 		[Embed(source = "data/mapbackground.png")]	public var BackgroundSprite:Class;
 		[Embed(source = "data/scrollbackgroundbrown.png")]	public var ScrollBackgroundSprite:Class;
 		[Embed(source = "data/rKey.png")]	public var RKeySprite:Class;
+		
+		[Embed(source = "data/ld32theme.mp3")]	public var ThemeMusic:Class;
+		[Embed(source = "data/ending.mp3")]	public var EndingSound:Class;
+		[Embed(source = "data/extendTube.mp3")]	public var ExtendTubeSound:Class;
+		[Embed(source = "data/pickup.mp3")]	public var PickupSound:Class;
+		[Embed(source = "data/impact.mp3")]	public var ImpactSound:Class;
+		
+		public static const MUSIC_VOLUME:Number = .5;
+		public static const SFX_VOLUME:Number = .6;
+		
 		public static var instance:PlayState;
 		
 		public var player:Player;
@@ -64,7 +75,7 @@ package
 		public var bodyContext:BodyContext;
 		public var bodyRegistry:BodyRegistry;
 		
-		public static var DEBUG:Boolean = true;
+		public static var DEBUG:Boolean = false;
 		public static var DEBUG_DRAW:Boolean = false;
 		public static var debug:Debug;
 		public static const PIXEL_WIDTH:int = 20;
@@ -165,10 +176,15 @@ package
 		
 		public var R_ALPHA_RATE:Number = .2;
 		
+		public var superJellySpawnPoint:FlxPoint = new FlxPoint();
+		public var superJellySpawned:Boolean = false;
+		
 		override public function create():void
 		{
 			instance = this;
-			FlxG.bgColor = 0xffA3948B;
+			FlxG.bgColor = 0xff151029;
+			
+			FlxG.playMusic(ThemeMusic, MUSIC_VOLUME);
 			
 			save = new FlxSave();
 			var loaded:Boolean = save.bind("ZLD32");
@@ -347,7 +363,7 @@ package
 			rKey.visible = false;
 			rKey.alpha = 0;
 			rKey.offset = new FlxPoint(rKey.width / 2, rKey.height / 2);
-			rKey.scale = new FlxPoint(4, 4);
+			rKey.scale = new FlxPoint(8, 8);
 			rKey.scrollFactor = new FlxPoint(0, 0);
 		}
 		
@@ -432,6 +448,13 @@ package
 		
 		private function onPlayerTouchAir(collision:InteractionCallback) : void
 		{
+			if (!superJellySpawned)
+			{
+				
+				var superJelly:SuperJelly = new SuperJelly(superJellySpawnPoint.x, superJellySpawnPoint.y, bodyContext, enemyNodeLayer, enemyNodeLayer);
+				enemyLayer.add(superJelly);
+			}
+			
 			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
 			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
 			if (obj1 is Player)
@@ -501,6 +524,8 @@ package
 				{
 					Player(obj1).damage();
 					hud.onPlayerDamage();
+					FlxG.play(ImpactSound, SFX_VOLUME);
+			
 				}
 			}
 			
@@ -514,6 +539,8 @@ package
 				{
 					Player(obj2).damage();
 					hud.onPlayerDamage();
+					FlxG.play(ImpactSound, SFX_VOLUME);
+			
 				}
 			}
 			return PreFlag.IGNORE;
@@ -521,6 +548,7 @@ package
 		
 		private function playerTouchPickup(collision:InteractionCallback) : void
 		{
+			FlxG.play(PickupSound, SFX_VOLUME * .5);
 			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
 			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
 			if (obj1 is IPickup)
@@ -582,7 +610,7 @@ package
 				{
 					rKey.visible = false;
 				}
-				rKey.alpha += FlxG.elapsed * R_ALPHA_RATE;
+				rKey.alpha = Math.min(.5, FlxG.elapsed * R_ALPHA_RATE);
 			}
 				
 			
@@ -766,6 +794,7 @@ package
 		public function onOrbReturned() : void
 		{
 			extendTube(ORB_COLLECT_TUBE_EXTEND);
+			FlxG.play(ExtendTubeSound, SFX_VOLUME);
 		}
 		
 		public function getTube() : BreathingTube
@@ -889,22 +918,23 @@ package
 			switch (ending)
 			{
 				case END_TREASURE:
-					PlayText.addText(text, "celebrate your trinket, little one", -1, null, endTextColor);
-					PlayText.addText(text, "may it bring happiness to what life you have left", -1, finishEndingGame, endTextColor);
+					PlayText.addText(text, "celebrate your trinket, little one", 3, null, endTextColor);
+					PlayText.addText(text, "may it bring happiness to what life you have left", 4, finishEndingGame, endTextColor);
 					break;
 					
 				case END_DEATH:
-					PlayText.addText(text, "do not fear, child", -1, null, endTextColor);
-					PlayText.addText(text, "now you are free", -1, finishEndingGame, endTextColor);
+					PlayText.addText(text, "do not fear, child", 3, null, endTextColor);
+					PlayText.addText(text, "now you are free", 4, finishEndingGame, endTextColor);
 					break;
 					
 				case END_JELLY:
-					PlayText.addText(text, "welcome", -1, finishEndingGame, endTextColor);
+					PlayText.addText(text, "we meet at last", 4, null, endTextColor);
+					PlayText.addText(text, "come, join me", 4, finishEndingGame, endTextColor);
 					break;
 					
 					
 				case END_BODY:
-					PlayText.addText(text, "finally, you two are reunited", -1, finishEndingGame, endTextColor);
+					PlayText.addText(text, "this is no place for your kind", 4, finishEndingGame, endTextColor);
 					break;
 					
 
@@ -922,6 +952,8 @@ package
 			{
 				return;
 			}
+			
+			FlxG.play(EndingSound, SFX_VOLUME);
 			
 			if (save.data.endings == null)
 			{
@@ -967,8 +999,7 @@ package
 		
 		public function addSuperJelly(X:Number, Y:Number) : void
 		{
-			var superJelly:SuperJelly = new SuperJelly(X, Y, bodyContext, enemyNodeLayer, enemyNodeLayer);
-			enemyLayer.add(superJelly);
+			superJellySpawnPoint = new FlxPoint(X, Y);
 		}
 		
 		public function addBlockerJellyPoint(X:Number, Y:Number) : void
