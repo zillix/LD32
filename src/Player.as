@@ -64,7 +64,9 @@ package
 		
 		public function get canMove() : Boolean
 		{
-			return PlayState.instance.viewedOneOrb && !PlayState.instance.endingGame;
+			return (PlayState.hasOneEnding || PlayState.instance.viewedOneOrb) && 
+			PlayState.instance.startedGame &&
+			  !PlayState.instance.endingGame;
 		}
 		
 		override public function update() : void

@@ -30,7 +30,22 @@ package
 		override public function update() : void
 		{
 			super.update();
-			alpha = PlayState.instance.depthDarkness;
+			
+			if (!PlayState.instance.startedGame)
+			{
+				alpha = 1;
+			}
+			else
+			{
+				if (alpha > PlayState.instance.depthDarkness)
+				{
+					alpha -= FlxG.elapsed;
+				}
+				else if (alpha <= PlayState.instance.depthDarkness)
+				{
+					alpha += FlxG.elapsed;
+				}
+			}
 		}
 		
 		public function reDarken() : void

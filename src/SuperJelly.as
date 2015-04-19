@@ -80,7 +80,7 @@ package
 			_nodeCount = 5;
 			_coreRadius = 20;
 			_nodeRadius = 35;
-			_nodeDesnsity = 1.2;
+			_nodeDesnsity = 2;
 			super.setupNodes();
 			makeInvincible();
 		}

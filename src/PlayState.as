@@ -121,6 +121,7 @@ package
 		public static const END_DEATH:int = 1;
 		public static const END_JELLY:int = 2;
 		public static const END_BODY:int = 3;
+		public static const MAX_ENDINGS:int = 4;
 		
 		public static var currentEnding:int = END_DEATH;
 		
@@ -133,11 +134,34 @@ package
 		
 		public var jellyMinX:Number = 0;
 		
+		public static var hasOneEnding:Boolean = false;
+		
+		public var save:FlxSave;
+		
+		public var unlockedEndings:Vector.<int> = new Vector.<int>();
+		
+		public var version:String = "v0.5";
+		
+		public var startedGame:Boolean = false;
+		
+		public var titleScreen:TitleScreen ;
 		
 		override public function create():void
 		{
 			instance = this;
 			FlxG.bgColor = 0xffA3948B;
+			
+			save = new FlxSave();
+			var loaded:Boolean = save.bind("ZLD32");
+			if (save.data.endings)
+			{
+				for (var value:String in save.data.endings)
+				{
+					unlockedEndings.push(int(value));
+					
+				hasOneEnding = true;
+				}
+			}
 			
 			add(treasureLayer);
 			
@@ -209,6 +233,9 @@ package
 			setUpListeners();
 			
 			setupCompleteTime = getTimer() + SETUP_DURATION * 1000;
+			
+			titleScreen = new TitleScreen();
+			add(titleScreen);
 			
 			
 		}
@@ -471,6 +498,16 @@ package
 						}
 					}
 				}
+			}
+			
+			if (FlxG.keys.any())
+			{
+				startedGame = true;
+			}
+			
+			if (startedGame)
+			{
+				titleScreen.alpha -= FlxG.elapsed;
 			}
 				
 			
@@ -741,7 +778,7 @@ package
 					return 0xff4DFDFC;
 					
 				case END_BODY:
-					return 0xff000000;
+					return 0xffDDDDDD;
 					
 				default:
 					return 0xff000000;
@@ -813,6 +850,16 @@ package
 				return;
 			}
 			
+			if (save.data.endings == null)
+			{
+				save.data.endings = { };
+			}
+			
+			save.data.endings[ending] = true;
+			unlockedEndings.push(ending);
+			
+			hasOneEnding = true;
+			
 			endingGame = true;
 			var endColor:uint = getEndColor(ending);
 			currentEnding = ending;
@@ -876,6 +923,11 @@ package
 		{
 			var deadBody:DeadBody = new DeadBody(X, Y, bodyContext);
 			rockLayer.add(deadBody);
+		}
+		
+		public function hasUnlockedEnding(ending:int) : Boolean
+		{
+			return unlockedEndings.indexOf(ending) > -1;
 		}
 	}
 }
