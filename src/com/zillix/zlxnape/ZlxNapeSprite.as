@@ -117,15 +117,19 @@ package com.zillix.zlxnape
 			finishCreatingBody(bodyContext);
 		}
 		
-		public function createBody(Width:Number, Height:Number, bodyContext:BodyContext, bodyType:BodyType =  null, copyValues:Boolean = true) : void
+		public function createBody(Width:Number, Height:Number, bodyContext:BodyContext, bodyType:BodyType =  null, copyValues:Boolean = true, Scale:FlxPoint = null) : void
 		{
+			if (Scale == null)
+			{
+				Scale = new FlxPoint(1, 1);
+			}
 			initBody(bodyContext, bodyType, copyValues);
 			
 		    width = Width;
             height = Height;
-			_origOffset = new Vec2(width / 2, height / 2);
-			_body.shapes.add(new Polygon( Polygon.box(Width, Height)));
-			_body.position.set(new Vec2(x, y).add(origOffset));
+			_origOffset = new Vec2(width / 2, height / 2);//new Vec2(width * scale.x / 2, height * scale.y / 2);
+			_body.shapes.add(new Polygon( Polygon.box(Width * scale.x, Height * scale.y )));
+			_body.position.set(new Vec2(x, y).add(_origOffset));
 			_body.setShapeMaterials(Material.wood());
 			
 			finishCreatingBody(bodyContext);

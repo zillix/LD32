@@ -25,12 +25,12 @@ package
 		private static const SEGMENT_WIDTH:int = 8;
 		private static const SEGMENT_HEIGHT:int = 16;
 		private static const MAX_SEGMENTS:int = 100;
-		private static const STARTING_SEGMENTS:int = 15;
+		private static const STARTING_SEGMENTS:int = 8;
 		private static const SEGMENT_COLOR:uint = 0xffdddddd;
 		
 		private var _desiredChainLength:int = STARTING_SEGMENTS;
 		private var _nextChainSpawnTime:int = 0;
-		private static const CHAIN_SPAWN_FREQ:Number = .5;
+		private static const CHAIN_SPAWN_FREQ:Number = .1;
 			
 		
 		private var _tubeLayer:FlxGroup;

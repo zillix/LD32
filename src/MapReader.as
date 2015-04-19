@@ -117,6 +117,7 @@ package
 		private static const SMALL_ROCK:uint = 0x028BDA;
 		private static const TINY_PLANT:uint = 0xE8FD4D;
 		private static const ONE_WAY_PLATFORM:uint = 0x17620C;
+		private static const SHRINE:uint = 0x994364;
 		/*private static const MECH_SPAWN:uint = 0xC4181A; // 196 24 26
 		private static const MECH_HIDE:uint = 0x2C18C4; // 44 24 196
 		private static const MECH_IDLE:uint = 0x9D2DAF; // 157 45 175
@@ -213,6 +214,10 @@ package
 					
 				case ONE_WAY_PLATFORM:
 					_state.addOneWayPlatform(X, Y);
+					break;
+					
+				case SHRINE:
+					_state.addShrine(X, Y);
 					break;
 			}
 			

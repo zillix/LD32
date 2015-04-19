@@ -17,19 +17,19 @@ package
 	{
 		public var EXHAUSTED_ACCELERATION:int = 5500;
 		
-		public var ACCELERATION:int = 5500;
+		public var ACCELERATION:int = 500; // 5500;
 		public var MAX_SPEED:int = 20;
 		private const normalFriction:Material = new Material( -.5, 1, 0.38, 0.875, 0.005);
 		
 		private var _bubbleEmitter:BubbleEmitter;
 		
-		public var maxAir:Number = 100;
-		public var currentAir:Number = 100;
+		public var maxAir:Number = 60;
+		public var currentAir:Number = 60;
 		public static const NORMAL_AIR_DRAIN:Number = 1;
 		public static const MOVING_AIR_DRAIN:Number = 10;
 		public static const BUBBLING_AIR_DRAIN:Number = 15;
 		
-		public static const DAMAGE_AIR:Number = 70;
+		public static const DAMAGE_AIR:Number = 30;
 		
 		public static const AIR_TUBE_REGAIN:Number = 12;
 		public static const AIR_ZONE_REGAIN:Number = 60;
@@ -48,7 +48,7 @@ package
 		public function Player(X:Number, Y:Number, Context:BodyContext)
 		{
 			super(X, Y, 0xffff0000);
-			createBody(20, 20, Context);
+			createBody(10, 10, Context);
 			this.body.setShapeMaterials(normalFriction);
 			maxVelocity.x = MAX_SPEED;
 			maxVelocity.y = MAX_SPEED;

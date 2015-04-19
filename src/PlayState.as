@@ -46,7 +46,7 @@ package
 
 	public class PlayState extends FlxState
 	{
-		[Embed(source = "data/map1small.png")]	public var Map1:Class;
+		[Embed(source = "data/map1shaft.png")]	public var Map1:Class;
 		
 		public static var instance:PlayState;
 		
@@ -70,7 +70,7 @@ package
 		public var bubbleLayer:FlxGroup = new FlxGroup();
 		public var tubeLayer:FlxGroup = new FlxGroup();
 		public var plantLayer:FlxGroup = new FlxGroup();
-		private var rockLayer:FlxGroup = new FlxGroup();
+		public var rockLayer:FlxGroup = new FlxGroup();
 		private var hudLayer:FlxGroup = new FlxGroup();
 		public var enemyLayer:FlxGroup = new FlxGroup();
 		private var enemyNodeLayer:FlxGroup = new FlxGroup();
@@ -83,7 +83,7 @@ package
 		private var darkness:Darkness;
 		public var hud:Hud;
 		
-		public static const GRAVITY:Number = 200;
+		public static const GRAVITY:Number = 100;
 		public static const FRAME_RATE :Number = 1 / 30;
 		
 		public var bubbleRenderer:FluidRenderer;
@@ -198,6 +198,23 @@ package
 			
 			var bubbleTouchAir:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.FLUID, CallbackTypes.BUBBLE, CallbackTypes.AIR, onBubbleTouchAir, 2);
 			space.listeners.add(bubbleTouchAir);
+			
+			var rockTouchShrine:InteractionListener = new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CallbackTypes.SHRINE, CallbackTypes.ENEMY, onRockTouchShrine, 2);
+			space.listeners.add(rockTouchShrine);
+		}
+		
+		private function onRockTouchShrine(collision:InteractionCallback) : void
+		{
+			var obj1:ZlxNapeSprite = bodyRegistry.getSprite(collision.int1);
+			var obj2:ZlxNapeSprite = bodyRegistry.getSprite(collision.int2);
+			if (obj1 is Shrine)
+			{
+				Shrine(obj1).onRockHit();
+			}
+			if (obj2 is Shrine)
+			{
+				Shrine(obj2).onRockHit();
+			}
 		}
 		
 		private function onPlayerTouchAir(collision:InteractionCallback) : void
@@ -322,6 +339,11 @@ package
 				{
 					paused = !paused;
 				}
+				
+				if (FlxG.keys.A)
+				{
+					player.currentAir = player.maxAir;
+				}
 			}
 			
 			var time:int = getTimer();
@@ -391,8 +413,10 @@ package
 			var rock:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
 			rock.createBody(100, 40, bodyContext);
 			rock.collisionGroup = rock.collisionGroup | InteractionGroups.ROCK;
-			rock.setMaterial(new Material(1, 1, 1, Water.DENSITY + .3, .001));
+			rock.fluidMask = 0;
+			rock.setMaterial(new Material(-5, 20, 20, 2, .001));
 			rockLayer.add(rock);
+			rock.addCbType(CallbackTypes.ENEMY);
 			
 		}
 		
@@ -452,7 +476,7 @@ package
 			addText(text, "you collected an orb!");
 			queueText(text);
 			
-			extendTube(15);
+			extendTube(8);
 		}
 		
 		public function getTube() : BreathingTube
@@ -482,9 +506,17 @@ package
 			var plat:ColorSprite = new ColorSprite(X, Y, ROCK_COLOR);
 			plat.createBody(20, 4, bodyContext);
 			plat.setMaterial(new Material(1, 2, 2, Water.DENSITY + 4, .001));
-			plat.collisionGroup = InteractionGroups.ROCK;
+			plat.collisionMask = InteractionGroups.ROCK;
+			
+			
 			plat.body.type = BodyType.STATIC;
 			rockLayer.add(plat);
+		}
+		
+		public function addShrine(X:Number, Y:Number) : void
+		{
+			var shrine:Shrine = new Shrine(X, Y, bodyContext);
+			rockLayer.add(shrine);
 		}
 	}
 }

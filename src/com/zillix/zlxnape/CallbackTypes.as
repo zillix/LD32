@@ -15,6 +15,7 @@ package com.zillix.zlxnape
 		public static var ENEMY:CbType = new CbType();
 		public static var BUBBLE:CbType = new CbType();
 		public static var AIR:CbType = new CbType();
+		public static var SHRINE:CbType = new CbType();
 	}
 	
 }
