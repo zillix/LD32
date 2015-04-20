@@ -84,8 +84,7 @@ package
 		
 		public function get canMove() : Boolean
 		{
-			return (PlayState.hasOneEnding) && 
-			PlayState.instance.startedGame &&
+			return PlayState.instance.startedGame &&
 			  !PlayState.instance.endingGame;
 		}
 		

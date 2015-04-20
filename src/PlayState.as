@@ -164,7 +164,7 @@ package
 		
 		public var unlockedEndings:Vector.<int> = new Vector.<int>();
 		
-		public var version:String = "v0.5";
+		public var version:String = "v0.7";
 		
 		public var startedGame:Boolean = false;
 		
@@ -573,7 +573,7 @@ package
 			
 			super.update();	
 			
-			if (getTimer() < setupCompleteTime || (!hasOneEnding))
+			if (getTimer() < setupCompleteTime)
 			{
 				player.setPosition(playerSpawn.x, playerSpawn.y);
 			}
@@ -755,7 +755,7 @@ package
 			var rock:ColorSprite = new ColorSprite(X, Y, 0xffA6916A);
 			rock.createBody(60, 80, bodyContext);
 			rock.collisionGroup = rock.collisionGroup | InteractionGroups.ROCK;
-			rock.setMaterial(new Material(-5, 0, 0, Water.DENSITY, .001));
+			rock.setMaterial(new Material(-5, 0, 0, Water.DENSITY - 1.15, .001));
 			backgroundLayer.add(rock);
 			rock.addCbType(CallbackTypes.ROCK);
 			
@@ -1027,7 +1027,7 @@ package
 		
 		public function addDeadBody(X:Number, Y:Number) : void
 		{
-			var deadBody:DeadBody = new DeadBody(X, Y + 10, bodyContext);
+			var deadBody:DeadBody = new DeadBody(X, Y + 5, bodyContext);
 			rockLayer.add(deadBody);
 		}
 		
